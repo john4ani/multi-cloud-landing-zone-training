@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /application/web-angular
+    schedule: { interval: weekly }
+  - package-ecosystem: nuget
+    directory: /application/backend
+    schedule: { interval: weekly }
+  - package-ecosystem: terraform
+    directory: /infrastructure/environments/azure-training
+    schedule: { interval: weekly }
+  - package-ecosystem: terraform
+    directory: /infrastructure/environments/aws-training
+    schedule: { interval: weekly }
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }

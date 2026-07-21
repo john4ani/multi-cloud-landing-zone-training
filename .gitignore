@@ -1,0 +1,25 @@
+# Build and package output
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+coverage/
+
+# Local settings and secrets
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+*.tfvars
+!*.tfvars.example
+*.tfstate
+*.tfstate.*
+.terraform/
+crash.log
+
+# IDE and operating system
+.idea/
+.vs/
+.vscode/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,47 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: application/web-angular/.nvmrc
+          cache: npm
+          cache-dependency-path: application/web-angular/package-lock.json
+      - name: Test backend
+        run: dotnet test application/backend/CloudArchitectureTraining.slnx --configuration Release
+      - name: Test and build frontend
+        working-directory: application/web-angular
+        run: |
+          npm ci
+          npm test -- --watch=false
+          npm run build
+
+  infrastructure-and-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.13.4
+      - uses: open-policy-agent/setup-opa@b2b258e089860efaadaaf71bf6e3aecb4a3eeff1 # v2.4.0
+        with:
+          version: 1.7.1
+      - name: Check Terraform formatting
+        run: terraform fmt -check -recursive infrastructure
+      - name: Test Rego policies
+        working-directory: policies
+        run: opa test rego tests --verbose

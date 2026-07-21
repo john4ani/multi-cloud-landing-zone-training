@@ -1,0 +1,4 @@
+/.github/ @repository-owner
+/infrastructure/ @repository-owner
+/policies/ @repository-owner
+/docs/adrs/ @repository-owner
