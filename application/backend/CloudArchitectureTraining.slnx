@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CloudArchitectureTraining.Api/CloudArchitectureTraining.Api.csproj" />
+    <Project Path="src/CloudArchitectureTraining.Application/CloudArchitectureTraining.Application.csproj" />
+    <Project Path="src/CloudArchitectureTraining.Domain/CloudArchitectureTraining.Domain.csproj" />
+    <Project Path="src/CloudArchitectureTraining.Infrastructure/CloudArchitectureTraining.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CloudArchitectureTraining.IntegrationTests/CloudArchitectureTraining.IntegrationTests.csproj" />
+    <Project Path="tests/CloudArchitectureTraining.UnitTests/CloudArchitectureTraining.UnitTests.csproj" />
+  </Folder>
+</Solution>

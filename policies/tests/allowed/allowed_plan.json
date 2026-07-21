@@ -1,0 +1,18 @@
+{
+  "resource_changes": [
+    {
+      "address": "aws_s3_bucket.frontend",
+      "type": "aws_s3_bucket",
+      "change": {
+        "after": {
+          "tags": {
+            "application": "cloud-architecture-training",
+            "environment": "training",
+            "managed_by": "terraform",
+            "owner": "training"
+          }
+        }
+      }
+    }
+  ]
+}

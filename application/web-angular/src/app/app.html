@@ -1,0 +1,68 @@
+<header>
+  <p class="eyebrow">Multi-cloud landing zone training</p>
+  <h1>Interview preparation tracker</h1>
+  <p>One portable application contract, backed by Azure SQL or PostgreSQL.</p>
+</header>
+
+<main>
+  <section class="panel" aria-labelledby="new-topic-heading">
+    <h2 id="new-topic-heading">Add a learning topic</h2>
+    <form [formGroup]="form" (ngSubmit)="addTopic()">
+      <label>
+        Topic
+        <input formControlName="title" placeholder="For example: workload identity" />
+      </label>
+      <label>
+        Cloud
+        <select formControlName="cloud">
+          <option>Azure</option>
+          <option>AWS</option>
+          <option>Portable</option>
+        </select>
+      </label>
+      <label>
+        Status
+        <select formControlName="status">
+          <option value="Planned">Planned</option>
+          <option value="InProgress">In progress</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </label>
+      <label class="wide">
+        Notes
+        <textarea formControlName="notes" rows="3"></textarea>
+      </label>
+      <button type="submit" [disabled]="form.invalid">Add topic</button>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="topics-heading">
+    <div class="section-heading">
+      <h2 id="topics-heading">Learning backlog</h2>
+      <button class="secondary" type="button" (click)="refresh()">Refresh</button>
+    </div>
+
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+    @if (loading()) {
+      <p>Loading topics…</p>
+    } @else if (topics().length === 0) {
+      <p>No topics yet. Add the first one above.</p>
+    } @else {
+      <ul>
+        @for (topic of topics(); track topic.id) {
+          <li>
+            <div>
+              <span class="cloud">{{ topic.cloud }}</span>
+              <h3>{{ topic.title }}</h3>
+              <p>{{ topic.notes || 'No notes added.' }}</p>
+            </div>
+            <div class="actions">
+              <span class="status">{{ topic.status }}</span>
+              <button class="danger" type="button" (click)="removeTopic(topic.id)">Remove</button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+</main>

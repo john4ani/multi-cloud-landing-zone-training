@@ -1,0 +1,5 @@
+bucket       = "replace-with-bootstrap-output"
+key          = "cloud-architecture-training/aws/training/platform.tfstate"
+region       = "eu-central-1"
+encrypt      = true
+use_lockfile = true

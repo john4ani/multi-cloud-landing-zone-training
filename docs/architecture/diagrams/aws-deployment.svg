@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="940" viewBox="0 0 1600 940" role="img" aria-labelledby="title desc">
+  <title id="title">AWS low-cost landing-zone deployment</title>
+  <desc id="desc">The browser authenticates with Amazon Cognito using Authorization Code with PKCE and reaches CloudFront. CloudFront serves Angular from a private S3 bucket and sends API traffic to API Gateway, whose JWT authorizer validates Cognito tokens. API Gateway invokes a .NET Lambda function inside a VPC, which uses IAM authentication to access private RDS for PostgreSQL. IAM, budgets, CloudWatch, policy controls, and enterprise extension points surround the workload.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#35465c"/></marker>
+    <marker id="arrow-orange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#d76b00"/></marker>
+    <style>
+      .title{font:600 30px Arial,sans-serif;fill:#172033}.subtitle{font:400 15px Arial,sans-serif;fill:#526173}
+      .group{fill:#fffaf3;stroke:#d76b00;stroke-width:2}.subgroup{fill:#ffffff;stroke:#8793a1;stroke-width:1.5}.private{fill:#f6fbf8;stroke:#3f7d62;stroke-width:1.8}.optional{fill:#fafafa;stroke:#8793a1;stroke-width:1.5;stroke-dasharray:8 6}.resource{fill:#ffffff;stroke:#aab3bf;stroke-width:1.5}
+      .group-label{font:600 16px Arial,sans-serif;fill:#9a4d00}.label{font:600 14px Arial,sans-serif;fill:#172033}.small{font:400 12px Arial,sans-serif;fill:#526173}.flow{fill:none;stroke:#35465c;stroke-width:2.2;marker-end:url(#arrow)}.control{fill:none;stroke:#d76b00;stroke-width:2;stroke-dasharray:7 5;marker-end:url(#arrow-orange)}
+    </style>
+  </defs>
+
+  <rect width="1600" height="940" fill="#ffffff"/>
+  <text x="60" y="54" class="title">AWS deployment — accepted low-cost profile</text>
+  <text x="60" y="82" class="subtitle">Single workload account with an explicit multi-account enterprise migration path</text>
+
+  <rect x="245" y="112" width="1295" height="710" rx="10" class="group"/>
+  <text x="270" y="142" class="group-label">AWS workload account</text>
+
+  <rect x="350" y="208" width="360" height="390" rx="10" class="subgroup"/>
+  <text x="375" y="238" class="group-label">Public edge</text>
+
+  <rect x="890" y="208" width="370" height="390" rx="10" class="private"/>
+  <text x="915" y="238" class="group-label" style="fill:#2f654e">Workload VPC — no NAT Gateway</text>
+  <text x="915" y="261" class="small">Private application and data access</text>
+
+  <rect x="1300" y="208" width="195" height="390" rx="10" class="optional"/>
+  <text x="1320" y="238" class="group-label">Enterprise extension</text>
+  <text x="1320" y="260" class="small">Disabled in training</text>
+
+  <circle cx="100" cy="365" r="38" fill="#e8eef5" stroke="#6b7b8d" stroke-width="1.5"/>
+  <circle cx="100" cy="351" r="11" fill="#526173"/>
+  <path d="M78 384 Q100 364 122 384" fill="none" stroke="#526173" stroke-width="7" stroke-linecap="round"/>
+  <text x="100" y="423" text-anchor="middle" class="label">Browser user</text>
+
+  <g transform="translate(58 163)">
+    <rect width="170" height="112" rx="8" class="resource"/>
+    <image href="icons/aws/cognito.svg" x="59" y="12" width="52" height="52"/>
+    <text x="85" y="84" text-anchor="middle" class="label">Amazon Cognito</text>
+    <text x="85" y="103" text-anchor="middle" class="small">OIDC user pool</text>
+  </g>
+  <path d="M92 327 V275" class="control"/>
+  <path d="M116 275 V327" class="control"/>
+  <text x="128" y="305" class="small">Code + PKCE</text>
+  <path d="M228 213 H320 V260 H780 V290" class="control"/>
+  <text x="535" y="252" text-anchor="middle" class="small">JWT issuer, audience, groups and signing keys</text>
+
+  <rect x="64" y="650" width="165" height="104" rx="8" class="resource"/>
+  <path d="M95 689 l16 -13 m-16 13 l16 13 M141 676 l16 13 -16 13" fill="none" stroke="#35465c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="146" y="724" text-anchor="middle" class="label">CI/CD pipeline</text>
+  <text x="146" y="744" text-anchor="middle" class="small">OIDC role session</text>
+
+  <path d="M138 365 H390" class="flow"/>
+  <text x="265" y="349" text-anchor="middle" class="small">HTTPS 443</text>
+
+  <g transform="translate(390 270)">
+    <rect width="140" height="150" rx="8" class="resource"/>
+    <image href="icons/aws/cloudfront.svg" x="42" y="18" width="56" height="56"/>
+    <text x="70" y="96" text-anchor="middle" class="label">CloudFront</text>
+    <text x="70" y="117" text-anchor="middle" class="small">HTTPS ingress</text>
+    <text x="70" y="136" text-anchor="middle" class="small">Free allowance</text>
+  </g>
+
+  <g transform="translate(540 435)">
+    <rect width="140" height="130" rx="8" class="resource"/>
+    <image href="icons/aws/s3.svg" x="42" y="14" width="56" height="56"/>
+    <text x="70" y="91" text-anchor="middle" class="label">Amazon S3</text>
+    <text x="70" y="111" text-anchor="middle" class="small">Private Angular origin</text>
+  </g>
+  <path d="M500 420 V500 H540" class="flow"/>
+  <text x="516" y="484" class="small">OAC</text>
+
+  <g transform="translate(710 290)">
+    <rect width="140" height="150" rx="8" class="resource"/>
+    <image href="icons/aws/api-gateway.svg" x="42" y="18" width="56" height="56"/>
+    <text x="70" y="96" text-anchor="middle" class="label">API Gateway</text>
+    <text x="70" y="116" text-anchor="middle" class="small">HTTP API /api</text>
+    <text x="70" y="135" text-anchor="middle" class="small">Cognito JWT authorizer</text>
+  </g>
+  <path d="M530 345 H710" class="flow"/>
+  <text x="620" y="329" text-anchor="middle" class="small">HTTPS /api</text>
+
+  <g transform="translate(920 290)">
+    <rect width="140" height="150" rx="8" class="resource"/>
+    <image href="icons/aws/lambda.svg" x="42" y="18" width="56" height="56"/>
+    <text x="70" y="96" text-anchor="middle" class="label">AWS Lambda</text>
+    <text x="70" y="117" text-anchor="middle" class="small">ASP.NET Core API</text>
+    <text x="70" y="136" text-anchor="middle" class="small">Free allowance</text>
+  </g>
+  <path d="M850 365 H920" class="flow"/>
+  <text x="885" y="349" text-anchor="middle" class="small">Invoke</text>
+
+  <g transform="translate(1090 290)">
+    <rect width="140" height="150" rx="8" class="resource"/>
+    <image href="icons/aws/rds.svg" x="42" y="18" width="56" height="56"/>
+    <text x="70" y="96" text-anchor="middle" class="label">Amazon RDS</text>
+    <text x="70" y="116" text-anchor="middle" class="small">PostgreSQL, private</text>
+    <text x="70" y="135" text-anchor="middle" class="small">IAM DB authentication</text>
+  </g>
+  <path d="M1060 365 H1090" class="flow"/>
+  <text x="1075" y="349" text-anchor="middle" class="small">TLS</text>
+
+  <g transform="translate(920 470)">
+    <rect width="140" height="104" rx="8" class="resource"/>
+    <image href="icons/aws/cloudwatch.svg" x="48" y="10" width="44" height="44"/>
+    <text x="70" y="76" text-anchor="middle" class="label">CloudWatch</text>
+    <text x="70" y="94" text-anchor="middle" class="small">Short retention</text>
+  </g>
+  <path d="M990 440 V470" class="control"/>
+
+  <g transform="translate(365 665)">
+    <rect width="170" height="110" rx="8" class="resource"/>
+    <image href="icons/aws/iam.svg" x="59" y="12" width="52" height="52"/>
+    <text x="85" y="85" text-anchor="middle" class="label">IAM guardrails</text>
+    <text x="85" y="103" text-anchor="middle" class="small">Least privilege</text>
+  </g>
+  <g transform="translate(565 665)">
+    <rect width="170" height="110" rx="8" class="resource"/>
+    <image href="icons/aws/budgets.svg" x="59" y="12" width="52" height="52"/>
+    <text x="85" y="85" text-anchor="middle" class="label">AWS Budgets</text>
+    <text x="85" y="103" text-anchor="middle" class="small">Billing alerts</text>
+  </g>
+  <path d="M450 665 V630 H960" class="control"/>
+  <path d="M650 665 V630 H1110" class="control"/>
+
+  <path d="M229 700 H300 V172 H515" class="flow"/>
+  <text x="313" y="190" class="small">Terraform + application deployment</text>
+
+  <g transform="translate(1320 310)">
+    <rect width="155" height="82" rx="8" class="optional"/>
+    <text x="77" y="34" text-anchor="middle" class="label">AWS Organizations</text>
+    <text x="77" y="55" text-anchor="middle" class="small">Dedicated accounts</text>
+  </g>
+  <g transform="translate(1320 430)">
+    <rect width="155" height="82" rx="8" class="optional"/>
+    <text x="77" y="34" text-anchor="middle" class="label">Central security</text>
+    <text x="77" y="55" text-anchor="middle" class="small">Logs + inspection</text>
+  </g>
+  <path d="M1397 392 V430" class="control"/>
+  <path d="M1260 500 H1300" class="control"/>
+
+  <rect x="245" y="854" width="20" height="3" fill="#35465c"/>
+  <text x="276" y="861" class="small">Runtime or deployment flow</text>
+  <line x1="470" y1="856" x2="500" y2="856" stroke="#d76b00" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="512" y="861" class="small">Identity, governance, or optional extension</text>
+  <text x="60" y="910" class="small">RDS uses time-limited Free Plan credits. Destroy the environment when testing is complete.</text>
+  <text x="780" y="910" class="small">Lambda-to-RDS access uses security-group references; no public database or NAT Gateway.</text>
+</svg>
