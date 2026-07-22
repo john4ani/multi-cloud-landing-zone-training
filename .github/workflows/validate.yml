@@ -23,6 +23,12 @@ jobs:
           cache-dependency-path: application/web-angular/package-lock.json
       - name: Test backend
         run: dotnet test application/backend/CloudArchitectureTraining.slnx --configuration Release
+      - name: Verify provider-specific migrations
+        working-directory: application/backend
+        run: |
+          dotnet tool restore
+          Database__Provider=PostgreSql dotnet ef migrations script --idempotent --project migrations/CloudArchitectureTraining.Migrations.PostgreSql --startup-project src/CloudArchitectureTraining.Api --output "${RUNNER_TEMP}/postgresql.sql"
+          Database__Provider=SqlServer dotnet ef migrations script --idempotent --project migrations/CloudArchitectureTraining.Migrations.SqlServer --startup-project src/CloudArchitectureTraining.Api --output "${RUNNER_TEMP}/sqlserver.sql"
       - name: Test and build frontend
         working-directory: application/web-angular
         run: |

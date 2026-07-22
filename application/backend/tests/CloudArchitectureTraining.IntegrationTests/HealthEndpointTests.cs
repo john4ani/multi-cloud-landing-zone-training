@@ -1,13 +1,11 @@
-using Microsoft.AspNetCore.Mvc.Testing;
-
 namespace CloudArchitectureTraining.IntegrationTests;
 
-public sealed class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class HealthEndpointTests : IClassFixture<TrainingApiFactory>
 {
     private readonly HttpClient _client;
 
-    public HealthEndpointTests(WebApplicationFactory<Program> factory) =>
-        _client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+    public HealthEndpointTests(TrainingApiFactory factory) =>
+        _client = factory.CreateClient(new() { AllowAutoRedirect = false });
 
     [Fact]
     public async Task HealthEndpointReturnsSuccess()

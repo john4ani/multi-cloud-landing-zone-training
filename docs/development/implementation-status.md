@@ -7,6 +7,8 @@ Last updated: 2026-07-21
 - Angular 22 responsive training UI.
 - .NET 10 clean-layered API with interview-topic CRUD.
 - EF Core repository abstraction with SQL Server and PostgreSQL providers.
+- Independent, tested PostgreSQL and SQL Server EF Core migration histories.
+- Explicit local migration and dual-provider migration-generation scripts.
 - Optional JWT bearer validation for Microsoft Entra ID or Amazon Cognito.
 - Local PostgreSQL and SQL Server Compose profiles.
 - Separate Azure and AWS Terraform bootstrap and environment roots.
@@ -18,7 +20,6 @@ Last updated: 2026-07-21
 
 ## Next implementation slice
 
-- Create and test provider-specific EF Core migrations.
 - Complete Azure Container Apps, private Azure SQL, networking, Entra, budget, and alert resources.
 - Complete AWS CloudFront, Lambda, private RDS PostgreSQL, networking, budget, alarm, and destroy resources.
 - Add Entra and Cognito Angular login adapters.

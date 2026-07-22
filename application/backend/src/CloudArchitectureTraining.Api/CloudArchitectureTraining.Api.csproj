@@ -8,11 +8,17 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CloudArchitectureTraining.Application\CloudArchitectureTraining.Application.csproj" />
     <ProjectReference Include="..\CloudArchitectureTraining.Infrastructure\CloudArchitectureTraining.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\migrations\CloudArchitectureTraining.Migrations.SqlServer\CloudArchitectureTraining.Migrations.SqlServer.csproj" />
+    <ProjectReference Include="..\..\migrations\CloudArchitectureTraining.Migrations.PostgreSql\CloudArchitectureTraining.Migrations.PostgreSql.csproj" />
   </ItemGroup>
 
 </Project>

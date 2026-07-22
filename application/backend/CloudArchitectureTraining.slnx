@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/migrations/">
+    <Project Path="migrations/CloudArchitectureTraining.Migrations.PostgreSql/CloudArchitectureTraining.Migrations.PostgreSql.csproj" />
+    <Project Path="migrations/CloudArchitectureTraining.Migrations.SqlServer/CloudArchitectureTraining.Migrations.SqlServer.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/CloudArchitectureTraining.Api/CloudArchitectureTraining.Api.csproj" />
     <Project Path="src/CloudArchitectureTraining.Application/CloudArchitectureTraining.Application.csproj" />

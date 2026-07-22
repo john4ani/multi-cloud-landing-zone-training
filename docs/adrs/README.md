@@ -18,3 +18,4 @@ Architecture Decision Records preserve why significant choices were made.
 - [ADR-0005: Use low-cost provider-specific database network boundaries](0005-database-networking.md)
 - [ADR-0006: Use separate encrypted remote Terraform state per cloud](0006-terraform-remote-state.md)
 - [ADR-0007: Use GitHub Actions with OIDC and gated deployment workflows](0007-github-actions-oidc-delivery.md)
+- [ADR-0008: Use provider-specific EF Core migration assemblies](0008-provider-specific-database-migrations.md)
