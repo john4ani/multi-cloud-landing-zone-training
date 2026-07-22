@@ -1,0 +1,81 @@
+name: Azure Plan
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/azure-*.yml
+      - infrastructure/**
+      - policies/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    if: >-
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TF_IN_AUTOMATION: 'true'
+      TF_INPUT: 'false'
+      TF_VAR_deploy_workload: 'true'
+      TF_VAR_sql_admin_password: PlanOnly-NotARealCredential-123!
+      TF_VAR_sql_entra_admin_object_id: ${{ vars.AZURE_APPLY_PRINCIPAL_ID }}
+      TF_VAR_owner: ${{ github.actor }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
+        with:
+          client-id: ${{ vars.AZURE_PLAN_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.13.4
+      - uses: open-policy-agent/setup-opa@b2b258e089860efaadaaf71bf6e3aecb4a3eeff1 # v2.4.0
+        with:
+          version: 1.7.1
+      - name: Prepare non-secret plan inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          current_image="$(az containerapp show --resource-group rg-cloud-training --name ca-cloud-training-api --query 'properties.template.containers[0].image' -o tsv 2>/dev/null || true)"
+          if [[ -z "$current_image" ]]; then
+            current_image='ghcr.io/example/cloud-training-api@sha256:0000000000000000000000000000000000000000000000000000000000000000'
+          fi
+          echo "TF_VAR_api_container_image=$current_image" >> "$GITHUB_ENV"
+          echo "TF_VAR_expires_at=$(date -u -d '+7 days' +%F)" >> "$GITHUB_ENV"
+          echo "TF_VAR_budget_start_date=$(date -u +%Y-%m-01T00:00:00Z)" >> "$GITHUB_ENV"
+      - name: Create speculative plan
+        working-directory: infrastructure/environments/azure-training
+        shell: bash
+        run: |
+          set -euo pipefail
+          terraform init -input=false \
+            -backend-config="resource_group_name=${{ vars.AZURE_TFSTATE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ vars.AZURE_TFSTATE_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=${{ vars.AZURE_TFSTATE_CONTAINER }}" \
+            -backend-config="key=cloud-architecture-training/azure/training/platform.tfstate" \
+            -backend-config="use_azuread_auth=true"
+          terraform plan -input=false -lock=false -out=tfplan
+          terraform show -json tfplan > tfplan.json
+          terraform show -no-color tfplan > plan-summary.txt
+      - name: Enforce policy as code
+        shell: bash
+        run: |
+          set -euo pipefail
+          opa eval --data policies/rego --input infrastructure/environments/azure-training/tfplan.json --format pretty 'data.terraform.security.deny' > policy-result.txt
+          opa eval --fail --data policies/rego --input infrastructure/environments/azure-training/tfplan.json 'count(data.terraform.security.deny) == 0'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: azure-speculative-plan-${{ github.run_id }}
+          path: |
+            infrastructure/environments/azure-training/plan-summary.txt
+            policy-result.txt
+          retention-days: 3
+

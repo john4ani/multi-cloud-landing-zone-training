@@ -44,6 +44,7 @@ module "training_platform" {
 
   location                     = var.location
   resource_prefix              = var.resource_prefix
+  resource_group_name          = var.resource_group_name
   api_container_image          = coalesce(var.api_container_image, "invalid.example/api@sha256:0000000000000000000000000000000000000000000000000000000000000000")
   authentication_enabled       = var.authentication_enabled
   entra_authority              = var.entra_authority
@@ -52,6 +53,8 @@ module "training_platform" {
   sql_admin_login              = var.sql_admin_login
   sql_admin_password           = coalesce(var.sql_admin_password, "deployment-disabled")
   sql_admin_password_version   = var.sql_admin_password_version
+  sql_entra_admin_login        = var.sql_entra_admin_login
+  sql_entra_admin_object_id    = var.sql_entra_admin_object_id
   vnet_address_space           = var.vnet_address_space
   container_apps_subnet_prefix = var.container_apps_subnet_prefix
   monthly_budget_amount        = var.monthly_budget_amount
@@ -70,6 +73,7 @@ output "deployment" {
     api_identity_principal_id = module.training_platform[0].api_identity_principal_id
     database_name             = module.training_platform[0].azure_sql_database_name
     frontend_hostname         = module.training_platform[0].frontend_hostname
+    frontend_name             = module.training_platform[0].frontend_name
     resource_group_name       = module.training_platform[0].resource_group_name
     sql_server_fqdn           = module.training_platform[0].azure_sql_server_fqdn
     sql_server_name           = module.training_platform[0].azure_sql_server_name

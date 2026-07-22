@@ -6,6 +6,10 @@ variable "resource_prefix" {
   type = string
 }
 
+variable "resource_group_name" {
+  type = string
+}
+
 variable "api_container_image" {
   type = string
   validation {
@@ -41,6 +45,16 @@ variable "sql_admin_password" {
 
 variable "sql_admin_password_version" {
   type = number
+}
+
+variable "sql_entra_admin_login" {
+  type = string
+}
+
+variable "sql_entra_admin_object_id" {
+  type     = string
+  default  = null
+  nullable = true
 }
 
 variable "vnet_address_space" {

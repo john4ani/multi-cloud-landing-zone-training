@@ -7,23 +7,21 @@ locals {
   frontend_origin = "https://${azurerm_static_web_app.frontend.default_host_name}"
 }
 
-resource "azurerm_resource_group" "workload" {
-  name     = "rg-${var.resource_prefix}"
-  location = var.location
-  tags     = var.tags
+data "azurerm_resource_group" "workload" {
+  name = var.resource_group_name
 }
 
 resource "azurerm_virtual_network" "workload" {
   name                = "vnet-${var.resource_prefix}"
-  resource_group_name = azurerm_resource_group.workload.name
-  location            = azurerm_resource_group.workload.location
+  resource_group_name = data.azurerm_resource_group.workload.name
+  location            = data.azurerm_resource_group.workload.location
   address_space       = [var.vnet_address_space]
   tags                = var.tags
 }
 
 resource "azurerm_subnet" "container_apps" {
   name                 = "snet-container-apps"
-  resource_group_name  = azurerm_resource_group.workload.name
+  resource_group_name  = data.azurerm_resource_group.workload.name
   virtual_network_name = azurerm_virtual_network.workload.name
   address_prefixes     = [var.container_apps_subnet_prefix]
   service_endpoints    = ["Microsoft.KeyVault", "Microsoft.Sql"]
@@ -39,8 +37,8 @@ resource "azurerm_subnet" "container_apps" {
 
 resource "azurerm_static_web_app" "frontend" {
   name                = "swa-${var.resource_prefix}"
-  resource_group_name = azurerm_resource_group.workload.name
-  location            = azurerm_resource_group.workload.location
+  resource_group_name = data.azurerm_resource_group.workload.name
+  location            = data.azurerm_resource_group.workload.location
   sku_tier            = "Free"
   sku_size            = "Free"
   tags                = var.tags
@@ -48,15 +46,15 @@ resource "azurerm_static_web_app" "frontend" {
 
 resource "azurerm_user_assigned_identity" "api" {
   name                = "id-${var.resource_prefix}-api"
-  resource_group_name = azurerm_resource_group.workload.name
-  location            = azurerm_resource_group.workload.location
+  resource_group_name = data.azurerm_resource_group.workload.name
+  location            = data.azurerm_resource_group.workload.location
   tags                = var.tags
 }
 
 resource "azurerm_log_analytics_workspace" "workload" {
   name                = "log-${var.resource_prefix}"
-  resource_group_name = azurerm_resource_group.workload.name
-  location            = azurerm_resource_group.workload.location
+  resource_group_name = data.azurerm_resource_group.workload.name
+  location            = data.azurerm_resource_group.workload.location
   sku                 = "PerGB2018"
   retention_in_days   = 30
   daily_quota_gb      = var.log_daily_quota_gb
@@ -64,17 +62,16 @@ resource "azurerm_log_analytics_workspace" "workload" {
 }
 
 resource "azurerm_container_app_environment" "workload" {
-  name                               = "cae-${var.resource_prefix}"
-  resource_group_name                = azurerm_resource_group.workload.name
-  location                           = azurerm_resource_group.workload.location
-  infrastructure_subnet_id           = azurerm_subnet.container_apps.id
-  infrastructure_resource_group_name = "ME_${var.resource_prefix}_${local.unique_suffix}"
-  log_analytics_workspace_id         = azurerm_log_analytics_workspace.workload.id
-  logs_destination                   = "log-analytics"
-  internal_load_balancer_enabled     = false
-  public_network_access              = "Enabled"
-  zone_redundancy_enabled            = false
-  tags                               = var.tags
+  name                           = "cae-${var.resource_prefix}"
+  resource_group_name            = data.azurerm_resource_group.workload.name
+  location                       = data.azurerm_resource_group.workload.location
+  infrastructure_subnet_id       = azurerm_subnet.container_apps.id
+  log_analytics_workspace_id     = azurerm_log_analytics_workspace.workload.id
+  logs_destination               = "log-analytics"
+  internal_load_balancer_enabled = false
+  public_network_access          = "Enabled"
+  zone_redundancy_enabled        = false
+  tags                           = var.tags
 
   workload_profile {
     name                  = "Consumption"
@@ -86,8 +83,8 @@ resource "azurerm_container_app_environment" "workload" {
 
 resource "azurerm_mssql_server" "workload" {
   name                                    = local.sql_server_name
-  resource_group_name                     = azurerm_resource_group.workload.name
-  location                                = azurerm_resource_group.workload.location
+  resource_group_name                     = data.azurerm_resource_group.workload.name
+  location                                = data.azurerm_resource_group.workload.location
   version                                 = "12.0"
   administrator_login                     = var.sql_admin_login
   administrator_login_password_wo         = var.sql_admin_password
@@ -98,8 +95,8 @@ resource "azurerm_mssql_server" "workload" {
   tags                                    = var.tags
 
   azuread_administrator {
-    login_username              = "terraform-deployer"
-    object_id                   = data.azurerm_client_config.current.object_id
+    login_username              = var.sql_entra_admin_login
+    object_id                   = coalesce(var.sql_entra_admin_object_id, data.azurerm_client_config.current.object_id)
     tenant_id                   = data.azurerm_client_config.current.tenant_id
     azuread_authentication_only = false
   }
@@ -118,7 +115,7 @@ resource "azapi_resource" "database" {
   type      = "Microsoft.Sql/servers/databases@2025-01-01"
   parent_id = azurerm_mssql_server.workload.id
   name      = var.database_name
-  location  = azurerm_resource_group.workload.location
+  location  = data.azurerm_resource_group.workload.location
   tags      = var.tags
 
   body = {
@@ -145,8 +142,8 @@ resource "azapi_resource" "database" {
 
 resource "azurerm_key_vault" "workload" {
   name                          = local.key_vault_name
-  resource_group_name           = azurerm_resource_group.workload.name
-  location                      = azurerm_resource_group.workload.location
+  resource_group_name           = data.azurerm_resource_group.workload.name
+  location                      = data.azurerm_resource_group.workload.location
   tenant_id                     = data.azurerm_client_config.current.tenant_id
   sku_name                      = "standard"
   rbac_authorization_enabled    = true
@@ -164,7 +161,7 @@ resource "azurerm_key_vault" "workload" {
 
 resource "azurerm_container_app" "api" {
   name                         = "ca-${var.resource_prefix}-api"
-  resource_group_name          = azurerm_resource_group.workload.name
+  resource_group_name          = data.azurerm_resource_group.workload.name
   container_app_environment_id = azurerm_container_app_environment.workload.id
   revision_mode                = "Single"
   max_inactive_revisions       = 1
@@ -263,7 +260,7 @@ resource "azurerm_container_app" "api" {
 
 resource "azurerm_monitor_action_group" "training" {
   name                = "ag-${var.resource_prefix}"
-  resource_group_name = azurerm_resource_group.workload.name
+  resource_group_name = data.azurerm_resource_group.workload.name
   short_name          = "training"
   tags                = var.tags
 
@@ -279,9 +276,9 @@ resource "azurerm_monitor_action_group" "training" {
 
 resource "azurerm_monitor_activity_log_alert" "resource_group_delete" {
   name                = "alert-${var.resource_prefix}-resource-group-delete"
-  resource_group_name = azurerm_resource_group.workload.name
+  resource_group_name = data.azurerm_resource_group.workload.name
   location            = "Global"
-  scopes              = [azurerm_resource_group.workload.id]
+  scopes              = [data.azurerm_resource_group.workload.id]
   description         = "Alerts when deletion of the training resource group starts."
   enabled             = true
   tags                = var.tags
@@ -299,7 +296,7 @@ resource "azurerm_monitor_activity_log_alert" "resource_group_delete" {
 
 resource "azurerm_consumption_budget_resource_group" "training" {
   name              = "budget-${var.resource_prefix}"
-  resource_group_id = azurerm_resource_group.workload.id
+  resource_group_id = data.azurerm_resource_group.workload.id
   amount            = var.monthly_budget_amount
   time_grain        = "Monthly"
 

@@ -1,0 +1,65 @@
+name: Azure Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type DESTROY-AZURE
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: azure-training-delivery
+  cancel-in-progress: false
+
+jobs:
+  destroy:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DESTROY-AZURE'
+    runs-on: ubuntu-latest
+    environment: azure-training
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TF_IN_AUTOMATION: 'true'
+      TF_INPUT: 'false'
+      TF_VAR_deploy_workload: 'true'
+      TF_VAR_api_container_image: ghcr.io/example/cloud-training-api@sha256:0000000000000000000000000000000000000000000000000000000000000000
+      TF_VAR_sql_admin_password: ${{ secrets.AZURE_SQL_ADMIN_PASSWORD }}
+      TF_VAR_sql_entra_admin_object_id: ${{ vars.AZURE_APPLY_PRINCIPAL_ID }}
+      TF_VAR_expires_at: 2099-12-31
+      TF_VAR_budget_start_date: 2099-12-01T00:00:00Z
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
+        with:
+          client-id: ${{ vars.AZURE_APPLY_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.13.4
+      - name: Create, verify, and apply an exact destroy plan
+        working-directory: infrastructure/environments/azure-training
+        shell: bash
+        run: |
+          set -euo pipefail
+          terraform init -input=false \
+            -backend-config="resource_group_name=${{ vars.AZURE_TFSTATE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ vars.AZURE_TFSTATE_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=${{ vars.AZURE_TFSTATE_CONTAINER }}" \
+            -backend-config="key=cloud-architecture-training/azure/training/platform.tfstate" \
+            -backend-config="use_azuread_auth=true"
+          terraform plan -destroy -input=false -out=destroy.tfplan
+          terraform show -no-color destroy.tfplan
+          sha256sum destroy.tfplan > destroy.tfplan.sha256
+          sha256sum --check destroy.tfplan.sha256
+          terraform apply -input=false -auto-approve destroy.tfplan
+      - name: Verify the workload resource group is empty
+        shell: bash
+        run: |
+          set -euo pipefail
+          remaining="$(az resource list --resource-group rg-cloud-training --query 'length(@)' -o tsv)"
+          test "$remaining" = '0' || { echo "$remaining workload resources remain"; exit 1; }

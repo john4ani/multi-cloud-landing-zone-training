@@ -22,7 +22,9 @@ jobs:
           cache: npm
           cache-dependency-path: application/web-angular/package-lock.json
       - name: Test backend
-        run: dotnet test application/backend/CloudArchitectureTraining.slnx --configuration Release
+        run: |
+          dotnet format application/backend/CloudArchitectureTraining.slnx --verify-no-changes
+          dotnet test application/backend/CloudArchitectureTraining.slnx --configuration Release
       - name: Verify provider-specific migrations
         working-directory: application/backend
         run: |
@@ -48,6 +50,29 @@ jobs:
           version: 1.7.1
       - name: Check Terraform formatting
         run: terraform fmt -check -recursive infrastructure
+      - name: Validate Terraform roots
+        shell: pwsh
+        run: |
+          $roots = @(
+            'infrastructure/bootstrap/azure',
+            'infrastructure/environments/azure-training',
+            'infrastructure/bootstrap/aws',
+            'infrastructure/environments/aws-training'
+          )
+          foreach ($root in $roots) {
+            terraform -chdir=$root init -backend=false -input=false
+            terraform -chdir=$root validate
+          }
       - name: Test Rego policies
         working-directory: policies
         run: opa test rego tests --verbose
+      - name: Check workflow security
+        shell: pwsh
+        run: ./scripts/validate-workflows.ps1
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          exit-code: '1'

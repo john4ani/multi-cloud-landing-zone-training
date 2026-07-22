@@ -1,6 +1,6 @@
 # ADR-0007: Use GitHub Actions with OIDC and gated deployment workflows
 
-- Status: Accepted
+- Status: Accepted and implemented for Azure
 - Date: 2026-07-21
 
 ## Context
@@ -37,7 +37,7 @@ The project needs a single, understandable delivery workflow for Angular, .NET, 
 9. Protected-environment approval.
 10. OIDC authentication using the apply identity and application of the exact reviewed plan.
 11. Application deployment, database migration, smoke tests, and evidence capture.
-12. On-demand or scheduled AWS destruction workflow with post-destroy inventory verification.
+12. On-demand destruction workflow with post-destroy inventory verification.
 
 ## Security controls
 
@@ -55,7 +55,8 @@ The project needs a single, understandable delivery workflow for Angular, .NET, 
 - GitHub becomes a control-plane dependency for deployment, although local validation and emergency documented recovery remain possible.
 - OIDC bootstrap still requires an initial privileged configuration in each cloud.
 - GitHub-hosted runner usage must remain within the repository/account allowance.
-- Protected environment availability and behavior depend on the selected GitHub plan and repository visibility; this must be verified before implementation.
+- Protected environment availability and behavior depend on the selected GitHub plan and repository visibility.
+- The low-cost Azure profile uses a public, vulnerability-scanned GHCR image because it intentionally omits a paid private registry. No secrets may be embedded in the image.
 
 ## Alternatives considered
 
@@ -82,7 +83,11 @@ Rejected because GitHub OIDC supports short-lived federation to both clouds.
 - Runtime identities cannot read Terraform state or modify infrastructure.
 - A deliberately failing OPA policy blocks deployment.
 - The apply job consumes the reviewed plan checksum.
-- AWS destruction completes and a post-destroy inventory shows only explicitly retained bootstrap resources.
+- Azure destruction completes and the persistent workload resource group is empty; state and OIDC bootstrap resources remain explicitly retained.
+
+## Implementation note
+
+The Azure lane is implemented by `validate.yml`, `azure-plan.yml`, `azure-deploy.yml`, and `azure-destroy.yml`. The deploy workflow obtains a Static Web Apps deployment token only after protected OIDC authentication, masks it, uses it once, and resets it in an `always()` cleanup step. The exact binary plan and checksum are retained for one day. AWS implementation remains pending.
 
 ## References
 

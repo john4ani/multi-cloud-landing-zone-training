@@ -10,7 +10,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$backendRoot = Join-Path $repositoryRoot 'application\backend'
+$deploymentProject = Join-Path $repositoryRoot 'application\backend\tools\CloudArchitectureTraining.DatabaseDeployment\CloudArchitectureTraining.DatabaseDeployment.csproj'
 $firewallRuleName = "temporary-migration-$((Get-Date).ToUniversalTime().ToString('yyyyMMddHHmmss'))"
 $serverFqdn = "$SqlServerName.database.windows.net"
 $previousProvider = $env:Database__Provider
@@ -24,10 +24,6 @@ function Assert-NativeCommand([string] $description) {
 
 if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
     throw 'Azure CLI (az) is required. Install it and run az login before this script.'
-}
-
-if (-not (Get-Command sqlcmd -ErrorAction SilentlyContinue)) {
-    throw 'sqlcmd is required to provision the managed-identity database user.'
 }
 
 Write-Host "Creating temporary Azure SQL firewall rule for $ClientIp..."
@@ -44,32 +40,10 @@ try {
     $env:Database__Provider = 'SqlServer'
     $env:ConnectionStrings__TrainingDatabase = "Server=tcp:$serverFqdn,1433;Initial Catalog=$DatabaseName;Authentication=Active Directory Default;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
 
-    Write-Host 'Applying the reviewed SQL Server migration history with the signed-in Entra identity...'
-    Push-Location $backendRoot
-    try {
-        dotnet tool restore
-        Assert-NativeCommand 'dotnet tool restore'
-        dotnet ef database update `
-            --project migrations\CloudArchitectureTraining.Migrations.SqlServer `
-            --startup-project src\CloudArchitectureTraining.Api
-        Assert-NativeCommand 'Azure SQL migration'
-    }
-    finally {
-        Pop-Location
-    }
-
-    $escapedIdentityName = $RuntimeIdentityName.Replace(']', ']]')
-    $principalId = $RuntimeIdentityPrincipalId.ToString()
-    $provisionRuntimeUser = @"
-IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'$($RuntimeIdentityName.Replace("'", "''"))')
-    CREATE USER [$escapedIdentityName] FROM EXTERNAL PROVIDER WITH OBJECT_ID='$principalId';
-ALTER ROLE db_datareader ADD MEMBER [$escapedIdentityName];
-ALTER ROLE db_datawriter ADD MEMBER [$escapedIdentityName];
-"@
-
-    Write-Host 'Granting the runtime managed identity data access without schema-owner permission...'
-    sqlcmd -S $serverFqdn -d $DatabaseName -G -b -Q $provisionRuntimeUser
-    Assert-NativeCommand 'Managed-identity database user provisioning'
+    dotnet run --project $deploymentProject --configuration Release -- `
+        --runtime-identity-name $RuntimeIdentityName `
+        --runtime-identity-principal-id $RuntimeIdentityPrincipalId
+    Assert-NativeCommand 'Azure SQL deployment'
 }
 finally {
     if ($null -eq $previousProvider) {

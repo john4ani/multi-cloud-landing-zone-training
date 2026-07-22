@@ -16,6 +16,7 @@ The reference workload uses Angular 22, ASP.NET Core on .NET 10, Azure SQL in Az
 8. [Implementation status](docs/development/implementation-status.md)
 9. [Database migration workflow](docs/development/database-migrations.md)
 10. [Policy-as-Code design](docs/security/policy-as-code.md)
+11. [Azure CI/CD setup and operation](docs/development/azure-cicd.md)
 
 ## Run locally
 
@@ -223,7 +224,7 @@ For more detail, see the [local development guide](docs/development/getting-star
 
 ## Current status
 
-The application scaffold and deployable Azure workload Terraform are implemented. Cloud workload creation remains disabled by default, and real Azure deployment evidence requires an explicit reviewed opt-in. The equivalent AWS API/database stack is the next implementation slice. See the [implementation status](docs/development/implementation-status.md) and [Azure deployment runbook](docs/development/deploy-azure.md) for the exact boundary.
+The application, deployable Azure workload Terraform, and protected Azure CI/CD lane are implemented. Cloud workload creation remains disabled by default, and real Azure deployment evidence requires completed OIDC bootstrap plus explicit protected-environment approval. The equivalent AWS API/database and delivery lane are the next slice. See the [implementation status](docs/development/implementation-status.md), [Azure CI/CD guide](docs/development/azure-cicd.md), and [Azure deployment runbook](docs/development/deploy-azure.md).
 
 ## Documentation principle
 

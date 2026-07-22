@@ -30,12 +30,16 @@ output "frontend_hostname" {
   value = azurerm_static_web_app.frontend.default_host_name
 }
 
+output "frontend_name" {
+  value = azurerm_static_web_app.frontend.name
+}
+
 output "key_vault_name" {
   value = azurerm_key_vault.workload.name
 }
 
 output "resource_group_name" {
-  value = azurerm_resource_group.workload.name
+  value = data.azurerm_resource_group.workload.name
 }
 
 output "subnet_id" {

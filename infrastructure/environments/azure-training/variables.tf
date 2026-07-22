@@ -13,6 +13,11 @@ variable "resource_prefix" {
   default = "cloud-training"
 }
 
+variable "resource_group_name" {
+  type    = string
+  default = "rg-cloud-training"
+}
+
 variable "owner" {
   type    = string
   default = "training"
@@ -77,6 +82,18 @@ variable "sql_admin_password_version" {
   type        = number
   default     = 1
   description = "Increment to rotate the write-only SQL administrator password."
+}
+
+variable "sql_entra_admin_login" {
+  type    = string
+  default = "github-actions-apply"
+}
+
+variable "sql_entra_admin_object_id" {
+  type        = string
+  default     = null
+  nullable    = true
+  description = "Object ID of the Entra identity that runs migrations. Defaults to the current Terraform principal for local deployment."
 }
 
 variable "vnet_address_space" {

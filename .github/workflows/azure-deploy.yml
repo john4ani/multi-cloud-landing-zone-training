@@ -1,0 +1,224 @@
+name: Azure Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type DEPLOY-AZURE
+        required: true
+      expires_at:
+        description: Destruction/review date (YYYY-MM-DD)
+        required: true
+      alert_email:
+        description: Optional budget alert email
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: azure-training-delivery
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY-AZURE'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: application/web-angular/.nvmrc
+          cache: npm
+          cache-dependency-path: application/web-angular/package-lock.json
+      - name: Test and build the exact commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet format application/backend/CloudArchitectureTraining.slnx --verify-no-changes
+          dotnet test application/backend/CloudArchitectureTraining.slnx --configuration Release
+          npm ci --prefix application/web-angular
+          npm test --prefix application/web-angular -- --watch=false
+          npm run build --prefix application/web-angular
+      - name: Build immutable API image
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="ghcr.io/${GITHUB_REPOSITORY,,}/api:${GITHUB_SHA}"
+          docker build --file application/backend/src/CloudArchitectureTraining.Api/Containerfile --tag "$image" application/backend
+          echo "IMAGE_TAG=$image" >> "$GITHUB_ENV"
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ env.IMAGE_TAG }}
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+      - name: Publish image by digest
+        id: image
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "${{ github.token }}" | docker login ghcr.io --username "${{ github.actor }}" --password-stdin
+          docker push "$IMAGE_TAG"
+          digest="$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_TAG")"
+          echo "image=$digest" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: azure-frontend-${{ github.sha }}
+          path: application/web-angular/dist/web-angular/browser
+          retention-days: 1
+
+  plan:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: azure-training-plan
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TF_IN_AUTOMATION: 'true'
+      TF_INPUT: 'false'
+      TF_VAR_deploy_workload: 'true'
+      TF_VAR_api_container_image: ${{ needs.build.outputs.image }}
+      TF_VAR_sql_admin_password: ${{ secrets.AZURE_SQL_ADMIN_PASSWORD }}
+      TF_VAR_sql_entra_admin_object_id: ${{ vars.AZURE_APPLY_PRINCIPAL_ID }}
+      TF_VAR_expires_at: ${{ inputs.expires_at }}
+      TF_VAR_owner: ${{ github.actor }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
+        with:
+          client-id: ${{ vars.AZURE_PLAN_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.13.4
+      - uses: open-policy-agent/setup-opa@b2b258e089860efaadaaf71bf6e3aecb4a3eeff1 # v2.4.0
+        with:
+          version: 1.7.1
+      - name: Create the reviewed plan
+        working-directory: infrastructure/environments/azure-training
+        shell: bash
+        env:
+          ALERT_EMAIL: ${{ inputs.alert_email }}
+        run: |
+          set -euo pipefail
+          export TF_VAR_budget_start_date="$(date -u +%Y-%m-01T00:00:00Z)"
+          export TF_VAR_alert_contact_emails="$(jq -cn --arg email "$ALERT_EMAIL" 'if $email == "" then [] else [$email] end')"
+          terraform init -input=false \
+            -backend-config="resource_group_name=${{ vars.AZURE_TFSTATE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ vars.AZURE_TFSTATE_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=${{ vars.AZURE_TFSTATE_CONTAINER }}" \
+            -backend-config="key=cloud-architecture-training/azure/training/platform.tfstate" \
+            -backend-config="use_azuread_auth=true"
+          terraform plan -input=false -lock=false -out=tfplan
+          terraform show -json tfplan > tfplan.json
+          terraform show -no-color tfplan > plan-summary.txt
+          opa eval --data "${GITHUB_WORKSPACE}/policies/rego" --input tfplan.json --format pretty 'data.terraform.security.deny' > policy-result.txt
+          opa eval --fail --data "${GITHUB_WORKSPACE}/policies/rego" --input tfplan.json 'count(data.terraform.security.deny) == 0'
+          sha256sum tfplan > tfplan.sha256
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: azure-reviewed-plan-${{ github.run_id }}
+          path: |
+            infrastructure/environments/azure-training/tfplan
+            infrastructure/environments/azure-training/tfplan.sha256
+            infrastructure/environments/azure-training/plan-summary.txt
+            infrastructure/environments/azure-training/policy-result.txt
+          retention-days: 1
+
+  apply:
+    needs: [build, plan]
+    runs-on: ubuntu-latest
+    environment: azure-training
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TF_IN_AUTOMATION: 'true'
+      TF_INPUT: 'false'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
+        with:
+          client-id: ${{ vars.AZURE_APPLY_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.13.4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: azure-reviewed-plan-${{ github.run_id }}
+          path: infrastructure/environments/azure-training
+      - name: Verify and apply the exact plan
+        working-directory: infrastructure/environments/azure-training
+        shell: bash
+        run: |
+          set -euo pipefail
+          terraform init -input=false \
+            -backend-config="resource_group_name=${{ vars.AZURE_TFSTATE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ vars.AZURE_TFSTATE_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=${{ vars.AZURE_TFSTATE_CONTAINER }}" \
+            -backend-config="key=cloud-architecture-training/azure/training/platform.tfstate" \
+            -backend-config="use_azuread_auth=true"
+          sha256sum --check tfplan.sha256
+          terraform apply -input=false -auto-approve tfplan
+          terraform output -json deployment > "${RUNNER_TEMP}/deployment.json"
+      - name: Apply database migrations
+        shell: pwsh
+        run: |
+          $deployment = Get-Content "$env:RUNNER_TEMP/deployment.json" | ConvertFrom-Json
+          $clientIp = (Invoke-RestMethod -Uri 'https://api.ipify.org').Trim()
+          ./scripts/migrate-azure.ps1 `
+            -ResourceGroupName $deployment.resource_group_name `
+            -SqlServerName $deployment.sql_server_name `
+            -DatabaseName $deployment.database_name `
+            -RuntimeIdentityName $deployment.api_identity_name `
+            -RuntimeIdentityPrincipalId $deployment.api_identity_principal_id `
+            -ClientIp $clientIp
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: azure-frontend-${{ github.sha }}
+          path: frontend
+      - name: Configure the frontend and fetch a short-lived deployment token
+        id: frontend
+        shell: pwsh
+        run: |
+          $deployment = Get-Content "$env:RUNNER_TEMP/deployment.json" | ConvertFrom-Json
+          "globalThis.cloudTrainingConfig = { apiBaseUrl: 'https://$($deployment.api_fqdn)/api' };" | Set-Content frontend/config.js
+          $token = az staticwebapp secrets list --name $deployment.frontend_name --resource-group $deployment.resource_group_name --query properties.apiKey -o tsv
+          if ($LASTEXITCODE -ne 0 -or -not $token) { throw 'Could not obtain the Static Web Apps deployment token.' }
+          Write-Output "::add-mask::$token"
+          "token=$token" >> $env:GITHUB_OUTPUT
+      - uses: azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
+        with:
+          azure_static_web_apps_api_token: ${{ steps.frontend.outputs.token }}
+          action: upload
+          app_location: frontend
+          skip_app_build: true
+          skip_api_build: true
+      - name: Smoke test the deployed system
+        shell: pwsh
+        run: |
+          $deployment = Get-Content "$env:RUNNER_TEMP/deployment.json" | ConvertFrom-Json
+          ./scripts/smoke-test.ps1 -ApiBaseUrl "https://$($deployment.api_fqdn)/api" -FrontendUrl "https://$($deployment.frontend_hostname)"
+      - name: Revoke the exposed frontend deployment token
+        if: always() && steps.frontend.outputs.token != ''
+        shell: pwsh
+        run: |
+          $deployment = Get-Content "$env:RUNNER_TEMP/deployment.json" | ConvertFrom-Json
+          az staticwebapp secrets reset-api-key --name $deployment.frontend_name --resource-group $deployment.resource_group_name --output none
+

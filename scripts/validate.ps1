@@ -92,4 +92,7 @@ finally {
 Write-Host 'Formatting Terraform...'
 terraform fmt -check -recursive (Join-Path $repositoryRoot 'infrastructure')
 
+Write-Host 'Checking GitHub Actions supply-chain controls...'
+& (Join-Path $PSScriptRoot 'validate-workflows.ps1')
+
 Write-Host 'Validation completed.'

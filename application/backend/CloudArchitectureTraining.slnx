@@ -13,4 +13,7 @@
     <Project Path="tests/CloudArchitectureTraining.IntegrationTests/CloudArchitectureTraining.IntegrationTests.csproj" />
     <Project Path="tests/CloudArchitectureTraining.UnitTests/CloudArchitectureTraining.UnitTests.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/CloudArchitectureTraining.DatabaseDeployment/CloudArchitectureTraining.DatabaseDeployment.csproj" />
+  </Folder>
 </Solution>

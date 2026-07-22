@@ -13,7 +13,7 @@
 
   <rect width="1600" height="930" fill="#fff"/>
   <text x="60" y="54" class="title">Multi-cloud delivery and Terraform state control plane</text>
-  <text x="60" y="82" class="subtitle">Accepted GitHub Actions, OIDC federation, protected approval, and separate remote-state design</text>
+  <text x="60" y="82" class="subtitle">Azure implemented; AWS target - OIDC federation, exact plans, protected approval, and separate state</text>
 
   <circle cx="90" cy="300" r="36" fill="#e8eef5" stroke="#6b7b8d" stroke-width="1.5"/>
   <circle cx="90" cy="287" r="10" fill="#526173"/>
@@ -71,7 +71,7 @@
   <path d="M800 300 H840" class="flow"/>
 
   <rect x="1080" y="118" width="450" height="320" rx="10" class="azure"/>
-  <text x="1105" y="150" class="group-label" style="fill:#005a9e">Azure deployment lane</text>
+  <text x="1105" y="150" class="group-label" style="fill:#005a9e">Azure deployment lane - implemented</text>
   <g transform="translate(1115 180)">
     <rect width="165" height="110" rx="8" class="resource"/>
     <image href="icons/azure/entra-id.svg" x="57" y="10" width="50" height="50"/>
@@ -80,9 +80,10 @@
   </g>
   <g transform="translate(1330 180)">
     <rect width="165" height="110" rx="8" class="resource"/>
-    <text x="82" y="42" text-anchor="middle" class="label">Azure workload</text>
-    <text x="82" y="65" text-anchor="middle" class="small">Exact reviewed plan</text>
-    <text x="82" y="86" text-anchor="middle" class="small">Deploy + smoke test</text>
+    <text x="82" y="31" text-anchor="middle" class="label">Azure workload</text>
+    <text x="82" y="53" text-anchor="middle" class="small">Exact plan + image digest</text>
+    <text x="82" y="74" text-anchor="middle" class="small">SQL migration + Angular</text>
+    <text x="82" y="95" text-anchor="middle" class="small">CRUD smoke + token revoke</text>
   </g>
   <g transform="translate(1220 315)">
     <rect width="190" height="96" rx="8" class="resource"/>
@@ -98,7 +99,7 @@
   <path d="M1412 290 V338 H1410" class="azflow"/>
 
   <rect x="1080" y="490" width="450" height="320" rx="10" class="aws"/>
-  <text x="1105" y="522" class="group-label" style="fill:#9a4d00">AWS deployment lane</text>
+  <text x="1105" y="522" class="group-label" style="fill:#9a4d00">AWS deployment lane - target</text>
   <g transform="translate(1115 550)">
     <rect width="165" height="110" rx="8" class="resource"/>
     <image href="icons/aws/iam.svg" x="57" y="10" width="50" height="50"/>

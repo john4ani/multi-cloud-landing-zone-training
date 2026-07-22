@@ -1,0 +1,1 @@
+globalThis.cloudTrainingConfig = globalThis.cloudTrainingConfig || {};
