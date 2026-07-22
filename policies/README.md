@@ -2,6 +2,8 @@
 
 Rego policies evaluate Terraform plan JSON before apply. Common rules enforce ownership tags, private databases, private storage, and versioned container images; provider files hold Azure- and AWS-specific controls.
 
+The Azure training profile additionally enforces cost-governance tags, SQL TLS 1.2, a SQL virtual-network rule, the `Microsoft.Sql` subnet service endpoint, single-IP temporary firewall rules, scale-to-zero Container Apps, the Azure SQL free limit with `AutoPause`, and the exclusion of paid NAT Gateway, Azure Firewall, and Private Endpoint resources.
+
 Run locally after producing a plan:
 
 ```powershell

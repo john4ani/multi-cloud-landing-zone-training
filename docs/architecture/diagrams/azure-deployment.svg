@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="940" viewBox="0 0 1600 940" role="img" aria-labelledby="title desc">
   <title id="title">Azure low-cost landing-zone deployment</title>
-  <desc id="desc">The browser authenticates with Microsoft Entra ID using Authorization Code with PKCE, reaches Angular on Azure Static Web Apps, and calls an ASP.NET Core API on Azure Container Apps using a bearer token. The API accesses Azure SQL Database through selected network firewall rules using managed identity. Azure Policy, budgets, monitoring, and an optional enterprise private-networking extension surround the workload.</desc>
+  <desc id="desc">The browser authenticates with Microsoft Entra ID using Authorization Code with PKCE, reaches Angular on Azure Static Web Apps, and calls an ASP.NET Core API on Azure Container Apps using a bearer token. The API accesses Azure SQL Database through a VNet service endpoint and SQL virtual-network rule using managed identity. Key Vault, budgets, monitoring, and an optional paid private-networking extension surround the workload.</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
       <path d="M0,0 L0,6 L9,3 z" fill="#334155"/>
@@ -16,14 +16,14 @@
   </defs>
 
   <rect width="1600" height="940" fill="#ffffff"/>
-  <text x="60" y="54" class="title">Azure deployment — accepted low-cost profile</text>
+  <text x="60" y="54" class="title">Azure deployment - implemented low-cost profile</text>
   <text x="60" y="82" class="subtitle">Workload-focused landing zone with enterprise extension points</text>
 
   <rect x="245" y="112" width="1295" height="710" rx="10" class="group"/>
   <text x="270" y="142" class="group-label">Azure application landing-zone subscription</text>
 
   <rect x="350" y="204" width="820" height="430" rx="10" class="group"/>
-  <text x="375" y="234" class="group-label">Workload resource group</text>
+  <text x="375" y="234" class="group-label">Workload resource group and VNet-integrated application boundary</text>
 
   <rect x="1210" y="204" width="285" height="430" rx="10" class="optional"/>
   <text x="1232" y="234" class="group-label">Enterprise extension</text>
@@ -57,7 +57,7 @@
   <path d="M570 365 H690" class="flow"/>
   <text x="630" y="348" text-anchor="middle" class="small">HTTPS /api</text>
   <path d="M830 365 H950" class="flow"/>
-  <text x="890" y="348" text-anchor="middle" class="small">TLS + explicit egress IPs</text>
+  <text x="890" y="348" text-anchor="middle" class="small">SQL service endpoint</text>
 
   <path d="M229 700 H300 V172 H520" class="flow"/>
   <text x="313" y="190" class="small">Terraform + application deployment</text>
@@ -103,6 +103,14 @@
   </g>
   <path d="M760 445 V490" class="identity"/>
 
+  <g transform="translate(930 490)">
+    <rect width="160" height="112" rx="8" class="resource"/>
+    <path d="M52 22 H108 V61 H52 Z M62 22 V14 H98 V22" fill="none" stroke="#0078d4" stroke-width="3"/>
+    <text x="80" y="79" text-anchor="middle" class="label">Key Vault</text>
+    <text x="80" y="98" text-anchor="middle" class="small">RBAC + default deny</text>
+  </g>
+  <path d="M570 586 H900 V546 H930" class="identity"/>
+
   <g transform="translate(365 675)">
     <rect width="170" height="110" rx="8" class="resource"/>
     <image href="icons/azure/policy.svg" x="59" y="12" width="52" height="52"/>
@@ -120,8 +128,8 @@
 
   <g transform="translate(1260 300)">
     <rect width="185" height="90" rx="8" class="optional"/>
-    <text x="92" y="37" text-anchor="middle" class="label">Virtual network</text>
-    <text x="92" y="59" text-anchor="middle" class="small">Hub or workload VNet</text>
+    <text x="92" y="37" text-anchor="middle" class="label">NAT / Firewall</text>
+    <text x="92" y="59" text-anchor="middle" class="small">Predictable controlled egress</text>
   </g>
   <g transform="translate(1260 430)">
     <rect width="185" height="90" rx="8" class="optional"/>
@@ -137,5 +145,5 @@
   <line x1="470" y1="856" x2="500" y2="856" stroke="#0078d4" stroke-width="2" stroke-dasharray="7 5"/>
   <text x="512" y="861" class="small">Identity, governance, or optional extension</text>
   <text x="60" y="910" class="small">Free tiers are usage-limited. Budgets alert but do not guarantee a spending cap.</text>
-  <text x="790" y="910" class="small">The broad “Allow Azure services” SQL firewall rule is prohibited.</text>
+  <text x="790" y="910" class="small">The broad &quot;Allow Azure services&quot; SQL firewall rule is prohibited.</text>
 </svg>

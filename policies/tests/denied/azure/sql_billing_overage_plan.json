@@ -1,0 +1,28 @@
+{
+  "resource_changes": [
+    {
+      "address": "azapi_resource.database",
+      "type": "azapi_resource",
+      "change": {
+        "after": {
+          "type": "Microsoft.Sql/servers/databases@2025-01-01",
+          "body": {
+            "properties": {
+              "freeLimitExhaustionBehavior": "BillOverUsage",
+              "useFreeLimit": true
+            }
+          },
+          "tags": {
+            "application": "cloud-architecture-training",
+            "cost-centre": "training",
+            "environment": "training",
+            "expires-at": "2026-08-31",
+            "managed_by": "terraform",
+            "owner": "training",
+            "project": "multi-cloud-landing-zone"
+          }
+        }
+      }
+    }
+  ]
+}

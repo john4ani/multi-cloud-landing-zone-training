@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-07-21
+- Update: The Azure egress-IP decision is superseded by [ADR-0009](0009-azure-sql-service-endpoint.md). The AWS decision remains accepted.
 
 ## Context
 
@@ -11,7 +12,7 @@ The database must never be directly reachable from a browser. Only the API workl
 
 ## Decision
 
-### Azure
+### Azure (superseded by ADR-0009)
 
 - Use the Azure SQL Database free serverless offer.
 - Set public network access to `Selected networks`, not unrestricted access.

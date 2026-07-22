@@ -23,3 +23,7 @@ Run `scripts/add-migration.ps1 -Name <MigrationName>`. It creates the named migr
 - The runtime identity receives data access but not schema-owner permission.
 - Backups and restore readiness must be verified before destructive migrations.
 - Roll-forward is preferred; a down migration is not a substitute for tested data recovery.
+
+## Azure controlled migration
+
+The Azure workload uses `scripts/migrate-azure.ps1` after Terraform apply. The script temporarily permits exactly one migration-runner IP, applies the SQL Server history with the signed-in Entra identity, creates the runtime managed-identity database user with data-reader/data-writer roles, and removes the firewall rule in guaranteed cleanup. See the [Azure deployment runbook](deploy-azure.md).

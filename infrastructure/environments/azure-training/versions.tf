@@ -2,8 +2,19 @@ terraform {
   required_version = ">= 1.13.0, < 2.0.0"
   backend "azurerm" {}
   required_providers {
-    azurerm = { source = "hashicorp/azurerm", version = "~> 4.0" }
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 2.11.0"
+    }
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.0"
+    }
   }
+}
+
+provider "azapi" {
+  enable_preflight = true
 }
 
 provider "azurerm" {
