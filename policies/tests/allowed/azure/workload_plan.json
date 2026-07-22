@@ -1,0 +1,28 @@
+{
+  "resource_changes": [
+    {
+      "address": "azurerm_mssql_server.workload",
+      "type": "azurerm_mssql_server",
+      "change": {
+        "after": {
+          "minimum_tls_version": "1.2",
+          "public_network_access_enabled": true,
+          "tags": {
+            "application": "cloud-architecture-training",
+            "cost-centre": "training",
+            "environment": "training",
+            "expires-at": "2026-08-31",
+            "managed_by": "terraform",
+            "owner": "training",
+            "project": "multi-cloud-landing-zone"
+          }
+        }
+      }
+    },
+    {
+      "address": "azurerm_mssql_virtual_network_rule.container_apps",
+      "type": "azurerm_mssql_virtual_network_rule",
+      "change": { "after": { "subnet_id": "/subscriptions/example/subnets/container-apps" } }
+    }
+  ]
+}

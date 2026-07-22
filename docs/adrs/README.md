@@ -19,3 +19,4 @@ Architecture Decision Records preserve why significant choices were made.
 - [ADR-0006: Use separate encrypted remote Terraform state per cloud](0006-terraform-remote-state.md)
 - [ADR-0007: Use GitHub Actions with OIDC and gated deployment workflows](0007-github-actions-oidc-delivery.md)
 - [ADR-0008: Use provider-specific EF Core migration assemblies](0008-provider-specific-database-migrations.md)
+- [ADR-0009: Use a VNet service endpoint for the Azure SQL training boundary](0009-azure-sql-service-endpoint.md)

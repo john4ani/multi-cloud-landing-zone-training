@@ -223,7 +223,7 @@ For more detail, see the [local development guide](docs/development/getting-star
 
 ## Current status
 
-The first application and delivery scaffold is implemented. Cloud workload creation remains disabled by default and the full private API/database stacks are the next implementation slice. See the [implementation status](docs/development/implementation-status.md) for an exact boundary between implemented resources and the target diagrams.
+The application scaffold and deployable Azure workload Terraform are implemented. Cloud workload creation remains disabled by default, and real Azure deployment evidence requires an explicit reviewed opt-in. The equivalent AWS API/database stack is the next implementation slice. See the [implementation status](docs/development/implementation-status.md) and [Azure deployment runbook](docs/development/deploy-azure.md) for the exact boundary.
 
 ## Documentation principle
 
