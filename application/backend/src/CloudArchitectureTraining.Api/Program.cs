@@ -1,3 +1,4 @@
+using Amazon.Lambda.AspNetCoreServer.Hosting;
 using CloudArchitectureTraining.Application.InterviewTopics;
 using CloudArchitectureTraining.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -6,6 +7,7 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddProblemDetails();
+builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddHealthChecks();
 builder.Services.AddScoped<InterviewTopicService>();
 builder.Services.AddTrainingInfrastructure(builder.Configuration);

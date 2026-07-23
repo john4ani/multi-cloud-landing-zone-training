@@ -4,6 +4,7 @@
 **/node_modules/
 **/dist/
 coverage/
+artifacts/
 
 # Local settings and secrets
 .env

@@ -115,3 +115,77 @@ test_paid_private_endpoint_is_denied if {
   some message in denials
   contains(message, "paid networking component")
 }
+
+test_allowed_aws_workload_has_no_denials if {
+  plan := {"resource_changes": [
+    {
+      "address": "aws_db_instance.database",
+      "type": "aws_db_instance",
+      "change": {"after": {
+        "allocated_storage": 20,
+        "iam_database_authentication_enabled": true,
+        "instance_class": "db.t4g.micro",
+        "max_allocated_storage": 0,
+        "multi_az": false,
+        "publicly_accessible": false,
+        "storage_encrypted": true,
+        "tags": training_tags,
+      }},
+    },
+    {
+      "address": "aws_cloudfront_distribution.frontend",
+      "type": "aws_cloudfront_distribution",
+      "change": {"after": {
+        "default_cache_behavior": [{"viewer_protocol_policy": "redirect-to-https"}],
+        "tags": training_tags,
+      }},
+    },
+  ]}
+  denials := security.deny with input as plan
+  count(denials) == 0
+}
+
+test_aws_nat_gateway_is_denied if {
+  plan := {"resource_changes": [{
+    "address": "aws_nat_gateway.training",
+    "type": "aws_nat_gateway",
+    "change": {"after": {}},
+  }]}
+  denials := security.deny with input as plan
+  some message in denials
+  contains(message, "paid component")
+}
+
+test_aws_unencrypted_database_is_denied if {
+  plan := {"resource_changes": [{
+    "address": "aws_db_instance.database",
+    "type": "aws_db_instance",
+    "change": {"after": {
+      "iam_database_authentication_enabled": true,
+      "instance_class": "db.t4g.micro",
+      "max_allocated_storage": 0,
+      "multi_az": false,
+      "publicly_accessible": false,
+      "storage_encrypted": false,
+      "tags": training_tags,
+    }},
+  }]}
+  denials := security.deny with input as plan
+  some message in denials
+  contains(message, "must encrypt database storage")
+}
+
+test_aws_postgresql_cidr_ingress_is_denied if {
+  plan := {"resource_changes": [{
+    "address": "aws_vpc_security_group_ingress_rule.database",
+    "type": "aws_vpc_security_group_ingress_rule",
+    "change": {"after": {
+      "cidr_ipv4": "10.30.0.0/16",
+      "from_port": 5432,
+      "to_port": 5432,
+    }},
+  }]}
+  denials := security.deny with input as plan
+  some message in denials
+  contains(message, "instead of a PostgreSQL CIDR")
+}

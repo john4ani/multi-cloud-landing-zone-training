@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="940" viewBox="0 0 1600 940" role="img" aria-labelledby="title desc">
   <title id="title">AWS low-cost landing-zone deployment</title>
-  <desc id="desc">The browser authenticates with Amazon Cognito using Authorization Code with PKCE and reaches CloudFront. CloudFront serves Angular from a private S3 bucket and sends API traffic to API Gateway, whose JWT authorizer validates Cognito tokens. API Gateway invokes a .NET Lambda function inside a VPC, which uses IAM authentication to access private RDS for PostgreSQL. IAM, budgets, CloudWatch, policy controls, and enterprise extension points surround the workload.</desc>
+  <desc id="desc">CloudFront serves Angular from a private S3 bucket and sends API traffic to API Gateway. API Gateway invokes a .NET 10 Lambda function inside a no-NAT VPC, which uses IAM authentication to access private RDS PostgreSQL. A separate untriggered migration Lambda applies schema changes and database grants. Cognito, IAM, budgets, CloudWatch, policy controls, and enterprise extension points surround the workload.</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#35465c"/></marker>
     <marker id="arrow-orange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#d76b00"/></marker>
@@ -12,8 +12,8 @@
   </defs>
 
   <rect width="1600" height="940" fill="#ffffff"/>
-  <text x="60" y="54" class="title">AWS deployment — accepted low-cost profile</text>
-  <text x="60" y="82" class="subtitle">Single workload account with an explicit multi-account enterprise migration path</text>
+  <text x="60" y="54" class="title">AWS deployment - implemented low-cost profile</text>
+  <text x="60" y="82" class="subtitle">Implemented Terraform baseline in one workload account; protected AWS CI/CD is the next slice</text>
 
   <rect x="245" y="112" width="1295" height="710" rx="10" class="group"/>
   <text x="270" y="142" class="group-label">AWS workload account</text>
@@ -109,6 +109,14 @@
   </g>
   <path d="M990 440 V470" class="control"/>
 
+  <g transform="translate(1090 470)">
+    <rect width="140" height="104" rx="8" class="resource"/>
+    <image href="icons/aws/lambda.svg" x="48" y="10" width="44" height="44"/>
+    <text x="70" y="76" text-anchor="middle" class="label">Migration Lambda</text>
+    <text x="70" y="94" text-anchor="middle" class="small">Explicit invocation only</text>
+  </g>
+  <path d="M1160 470 V440" class="control"/>
+
   <g transform="translate(365 665)">
     <rect width="170" height="110" rx="8" class="resource"/>
     <image href="icons/aws/iam.svg" x="59" y="12" width="52" height="52"/>
@@ -144,6 +152,6 @@
   <text x="276" y="861" class="small">Runtime or deployment flow</text>
   <line x1="470" y1="856" x2="500" y2="856" stroke="#d76b00" stroke-width="2" stroke-dasharray="7 5"/>
   <text x="512" y="861" class="small">Identity, governance, or optional extension</text>
-  <text x="60" y="910" class="small">RDS uses time-limited Free Plan credits. Destroy the environment when testing is complete.</text>
+  <text x="60" y="910" class="small">RDS uses time-limited Free Plan credits. Fixed 20 GiB, single-AZ, synthetic data; destroy after testing.</text>
   <text x="780" y="910" class="small">Lambda-to-RDS access uses security-group references; no public database or NAT Gateway.</text>
 </svg>

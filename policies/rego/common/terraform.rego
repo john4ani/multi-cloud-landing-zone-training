@@ -19,6 +19,17 @@ tagged_resource_types := {
   "azurerm_virtual_network",
   "aws_s3_bucket",
   "aws_cognito_user_pool",
+  "aws_cloudfront_distribution",
+  "aws_cloudwatch_log_group",
+  "aws_cloudwatch_metric_alarm",
+  "aws_db_instance",
+  "aws_db_parameter_group",
+  "aws_db_subnet_group",
+  "aws_iam_role",
+  "aws_lambda_function",
+  "aws_sns_topic",
+  "aws_subnet",
+  "aws_vpc",
 }
 
 deny contains message if {

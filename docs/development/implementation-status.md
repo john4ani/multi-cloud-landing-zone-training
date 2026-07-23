@@ -1,6 +1,6 @@
 # Implementation status
 
-Last updated: 2026-07-22
+Last updated: 2026-07-23
 
 ## Implemented
 
@@ -19,8 +19,9 @@ Last updated: 2026-07-22
 - Azure GitHub Actions validation, speculative plan, protected exact-plan deploy, migration, frontend deployment, CRUD smoke test, token rotation, and guarded destroy workflows.
 - Separate Azure plan/apply managed identities with repository/environment-bound OIDC federation and resource-group/state-scoped permissions.
 - Runtime Angular configuration for the deployed Azure API endpoint.
-- Initial AWS private frontend bucket and Cognito resources.
-- OPA/Rego security rules with Azure networking, free-limit, cost, identity, tagging, and allowed/denied plan coverage.
+- Complete AWS Terraform workload: CloudFront/OAC, private S3, API Gateway, .NET 10 Lambda, private fixed-size RDS PostgreSQL, no-NAT VPC, Cognito, IAM, logs, alarms, SNS, and budget.
+- AWS Lambda hosting, IAM PostgreSQL token refresh, reviewed ZIP packaging, explicit private migration Lambda, and manual migration/smoke scripts.
+- OPA/Rego security rules with Azure and AWS networking, capacity, cost, identity, tagging, and allowed/denied plan coverage.
 - SHA-pinned pull-request validation workflow.
 
 ## Validation boundary
@@ -28,10 +29,12 @@ Last updated: 2026-07-22
 - Azure Terraform syntax, provider schemas, formatting, and OPA rules are validated locally and in CI.
 - A real Azure plan/apply, migration, browser smoke test, and cost evidence require the user's Azure subscription, completed bootstrap/GitHub setup, public GHCR package, and explicit protected-environment approval.
 - Entra application registrations and Angular login integration are not yet implemented; Azure authentication remains disabled by default.
+- A real AWS plan/apply, migration, frontend upload, CRUD smoke test, and cost evidence require the user's AWS account, completed state bootstrap, current Free Plan review, and explicit opt-in.
+- Cognito Angular login integration is not yet implemented; AWS authentication remains disabled by default.
 
 ## Next implementation slice
 
-- Complete the equivalent AWS workload: CloudFront, API Gateway/Lambda, private RDS PostgreSQL, VPC controls, budgets, alarms, migration execution, and destroy evidence.
+- Add the protected AWS GitHub Actions OIDC plan/deploy/destroy lane.
 - Then add Entra and Cognito Angular login adapters.
 - Add cost-estimation and post-destroy inventory evidence.
 

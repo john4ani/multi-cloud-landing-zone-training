@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)] [uri] $ApiBaseUrl,
-    [Parameter(Mandatory)] [uri] $FrontendUrl
+    [Parameter(Mandatory)] [uri] $FrontendUrl,
+    [ValidateSet('Azure', 'AWS')] [string] $Cloud = 'Azure'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -30,8 +31,8 @@ try {
     $uniqueName = "CI smoke test $([DateTime]::UtcNow.ToString('yyyyMMddHHmmss'))"
     $created = Invoke-RestMethod -Method Post -Uri "$apiRoot/topics" -ContentType 'application/json' -Body (@{
         title = $uniqueName
-        cloud = 'Azure'
-        notes = 'Created by the guarded Azure deployment smoke test.'
+        cloud = $Cloud
+        notes = "Created by the guarded $Cloud deployment smoke test."
     } | ConvertTo-Json)
     $createdTopicId = $created.id
     if (-not $createdTopicId) { throw 'The create response did not include an id.' }
@@ -50,4 +51,4 @@ if ($frontend.StatusCode -ne 200 -or $frontend.Content -notmatch '<app-root') {
     throw 'The frontend did not return the expected Angular application shell.'
 }
 
-Write-Host 'Azure API, database CRUD, and frontend smoke tests passed.'
+Write-Host "$Cloud API, database CRUD, and frontend smoke tests passed."

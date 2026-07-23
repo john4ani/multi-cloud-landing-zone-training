@@ -17,6 +17,7 @@ The reference workload uses Angular 22, ASP.NET Core on .NET 10, Azure SQL in Az
 9. [Database migration workflow](docs/development/database-migrations.md)
 10. [Policy-as-Code design](docs/security/policy-as-code.md)
 11. [Azure CI/CD setup and operation](docs/development/azure-cicd.md)
+12. [AWS deployment runbook](docs/development/deploy-aws.md)
 
 ## Run locally
 
@@ -224,7 +225,7 @@ For more detail, see the [local development guide](docs/development/getting-star
 
 ## Current status
 
-The application, deployable Azure workload Terraform, and protected Azure CI/CD lane are implemented. Cloud workload creation remains disabled by default, and real Azure deployment evidence requires completed OIDC bootstrap plus explicit protected-environment approval. The equivalent AWS API/database and delivery lane are the next slice. See the [implementation status](docs/development/implementation-status.md), [Azure CI/CD guide](docs/development/azure-cicd.md), and [Azure deployment runbook](docs/development/deploy-azure.md).
+The application, Azure workload and CI/CD lane, and complete AWS workload Terraform are implemented. Cloud workload creation remains disabled by default. Real deployments require each cloud's state bootstrap and explicit opt-in. The protected AWS CI/CD lane is the next slice. See the [implementation status](docs/development/implementation-status.md), [Azure CI/CD guide](docs/development/azure-cicd.md), [Azure deployment runbook](docs/development/deploy-azure.md), and [AWS deployment runbook](docs/development/deploy-aws.md).
 
 ## Documentation principle
 

@@ -1,0 +1,17 @@
+deploy_workload = false
+owner           = "your-name"
+cost_centre     = "training"
+expires_at      = "2026-08-31"
+
+lambda_package_path = "../../../artifacts/aws/cloud-architecture-training-api.zip"
+
+database_instance_class    = "db.t4g.micro"
+database_allocated_storage = 20
+monthly_budget_amount      = 5
+alert_contact_emails       = ["you@example.com"]
+
+# Keep authentication disabled until the Angular Cognito adapter is configured.
+authentication_enabled = false
+
+# Never put database_admin_password in this file. Supply it only through:
+# $env:TF_VAR_database_admin_password = '<strong-bootstrap-password>'

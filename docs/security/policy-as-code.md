@@ -1,6 +1,6 @@
 # Policy-as-Code design
 
-Status: Proposed
+Status: Implemented baseline
 
 ## Objectives
 
@@ -49,6 +49,8 @@ Exceptions must be narrow, time-bound, owned, justified, and reviewed. An except
 - Require HTTPS and encryption at rest.
 - Require ownership, environment, project, management, cost, and expiry metadata.
 - Block sensitive Terraform outputs.
+
+The implemented AWS training rules additionally deny NAT Gateway, RDS Proxy, Network Firewall, public or unencrypted RDS, disabled IAM database authentication, unapproved RDS classes, Multi-AZ and storage autoscaling in the low-cost profile, PostgreSQL CIDR ingress, Lambda concurrency above five, and a non-HTTPS CloudFront default behavior.
 
 ## Testing
 
