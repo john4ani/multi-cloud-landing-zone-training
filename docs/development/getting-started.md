@@ -224,4 +224,4 @@ Review both generated migrations. PostgreSQL and SQL Server types, defaults, ind
 docker compose config
 ```
 
-The GitHub validation workflow repeats application builds, tests, Terraform validation, Rego tests, workflow hardening, and security scanning. The Azure plan/deploy/destroy workflows are implemented but require the one-time OIDC and protected-environment setup in the [Azure CI/CD guide](azure-cicd.md). AWS delivery remains deferred until its complete workload module and destroy evidence are implemented.
+The GitHub validation workflow repeats application builds, tests, Terraform validation, Rego tests, workflow hardening, and security scanning. Azure and AWS plan/deploy/destroy workflows are implemented but require the one-time OIDC and protected-environment setup in the [Azure CI/CD guide](azure-cicd.md) and [AWS CI/CD guide](aws-cicd.md). Local authentication is disabled by default; see the [authentication guide](authentication.md) for provider setup and deployment validation.

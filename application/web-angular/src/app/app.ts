@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InterviewTopic } from './features/topics/interview-topic';
 import { InterviewTopicService } from './features/topics/interview-topic.service';
+import { AuthenticationService } from './core/authentication/authentication.service';
 
 @Component({
   selector: 'app-root',
@@ -19,6 +20,7 @@ export class App implements OnInit {
   constructor(
     formBuilder: FormBuilder,
     private readonly topicService: InterviewTopicService,
+    protected readonly authentication: AuthenticationService,
   ) {
     this.form = formBuilder.nonNullable.group({
       title: ['', [Validators.required, Validators.maxLength(200)]],
@@ -29,7 +31,24 @@ export class App implements OnInit {
   }
 
   ngOnInit(): void {
-    this.refresh();
+    void this.initialize();
+  }
+
+  private async initialize(): Promise<void> {
+    await this.authentication.initialize();
+    if (this.authentication.isAuthenticated()) {
+      this.refresh();
+    } else {
+      this.loading.set(false);
+    }
+  }
+
+  protected login(): void {
+    void this.authentication.login();
+  }
+
+  protected logout(): void {
+    void this.authentication.logout();
   }
 
   protected refresh(): void {
@@ -40,7 +59,9 @@ export class App implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('The API is unavailable. Start the backend and local database, then try again.');
+        this.error.set(
+          'The API request failed. Check the backend, database, and sign-in session, then try again.',
+        );
         this.loading.set(false);
       },
     });

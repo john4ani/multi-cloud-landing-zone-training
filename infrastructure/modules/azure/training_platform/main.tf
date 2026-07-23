@@ -214,12 +214,20 @@ resource "azurerm_container_app" "api" {
         value = tostring(var.authentication_enabled)
       }
       env {
+        name  = "Authentication__Provider"
+        value = "Entra"
+      }
+      env {
         name  = "Authentication__Authority"
         value = var.entra_authority
       }
       env {
         name  = "Authentication__Audience"
         value = var.entra_audience
+      }
+      env {
+        name  = "Authentication__RoleClaimType"
+        value = "roles"
       }
       env {
         name  = "Cors__AllowedOrigins__0"

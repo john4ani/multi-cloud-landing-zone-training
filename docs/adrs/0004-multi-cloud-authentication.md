@@ -1,6 +1,6 @@
 # ADR-0004: Use cloud-native OIDC providers with a common application authorization model
 
-- Status: Accepted
+- Status: Implemented locally; cloud validation pending
 - Date: 2026-07-21
 
 ## Context
@@ -15,7 +15,7 @@ Using a single provider for both clouds would simplify configuration but weaken 
 - AWS uses an Amazon Cognito user pool.
 - The Angular public client uses OpenID Connect Authorization Code with PKCE and provider-hosted authentication endpoints.
 - The browser sends an access token in the HTTPS `Authorization: Bearer` header when calling the API.
-- Tokens are held in memory and are not persisted to local storage or session storage.
+- Tokens and the authenticated user are held in memory and are not persisted to local storage or session storage. Session storage contains only the short-lived protocol transaction state needed to validate the authorization response.
 - The API uses ASP.NET Core authentication and policy-based authorization.
 - Cloud-specific token validation configuration is isolated in the composition/configuration layer. Business and data-access code consumes a normalized application principal.
 - Provider roles are normalized to the application roles `User` and `Administrator`:
@@ -64,10 +64,10 @@ Deferred. It can further reduce browser token exposure but adds another stateful
 
 ## Validation
 
-- Automated login and protected-route test on Azure and AWS.
-- Invalid signature, issuer, audience, expired-token, missing-role, and cross-user tests.
-- Browser inspection confirming no token is stored in persistent web storage.
-- CORS and security-header tests.
+- Implemented: anonymous, missing-role, valid-role, ownership-isolation, and administrator integration tests.
+- Implemented: Angular bearer-interceptor tests and memory-only OIDC user storage.
+- Implemented: exact provider, authority, audience, role-claim, expiry, lifetime, and RS256 API validation; Cognito additionally validates `client_id` and `token_use=access`.
+- Pending deployment evidence: interactive login and sign-out on Azure and AWS, provider-rejected invalid tokens, browser storage inspection, CORS, and security headers.
 
 ## References
 

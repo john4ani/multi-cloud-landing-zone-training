@@ -37,12 +37,24 @@ Create these repository variables from the bootstrap output and Azure account de
 | `AZURE_TFSTATE_STORAGE_ACCOUNT` | `storage_account_name` |
 | `AZURE_TFSTATE_CONTAINER` | `container_name` |
 
+Authentication stays off when `AZURE_AUTHENTICATION_ENABLED` is absent or `false`. For an explicit sign-in deployment, first complete the [Entra setup](authentication.md#microsoft-entra-id-setup), then add:
+
+| Variable | Value |
+|---|---|
+| `AZURE_AUTHENTICATION_ENABLED` | `true` |
+| `AZURE_ENTRA_AUTHORITY` | Tenant v2.0 authority |
+| `AZURE_ENTRA_API_CLIENT_ID` | API application/client ID |
+| `AZURE_ENTRA_SPA_CLIENT_ID` | SPA application/client ID |
+| `AZURE_ENTRA_API_SCOPE` | Exposed delegated API scope |
+
 Create two GitHub environments:
 
 1. `azure-training-plan` protects creation of the deployable, saved plan.
 2. `azure-training` protects application of that plan and destruction.
 
 Configure required reviewers on both. Add the same environment secret named `AZURE_SQL_ADMIN_PASSWORD` to both environments. Use a unique value of at least 16 characters. It is a database bootstrap credential, not an Azure service-principal secret.
+
+For an authenticated smoke test, add a short-lived access token as environment secret `AZURE_AUTHENTICATION_TEST_ACCESS_TOKEN`. Remove it after the exercise. It is optional while authentication is disabled.
 
 The API image is published to GitHub Container Registry. Make the repository's `api` package public so Azure Container Apps can pull it without a stored registry credential. On the first run, let the `build` job publish the package, change its visibility before approving `azure-training-plan`, and then continue the deployment. Later runs need no visibility change. The application must not contain secrets.
 
@@ -54,6 +66,8 @@ The API image is published to GitHub Container Registry. Make the repository's `
 - `Azure Destroy` is manually dispatched from `main`. Enter `DESTROY-AZURE`; the protected apply identity creates and applies a checked destroy plan, then verifies that the workload resource group is empty.
 
 The Azure workflows share one concurrency group, so deploy and destroy cannot modify the same Terraform state simultaneously. Fork pull requests do not receive an Azure token.
+
+The deploy workflow generates the Angular runtime authentication configuration from Terraform outputs; no provider identifiers are compiled into the frontend.
 
 ## Required GitHub controls
 

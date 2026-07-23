@@ -17,7 +17,7 @@ The AWS training workload must run the same ASP.NET Core API and PostgreSQL EF C
 - Use Terraform's write-only RDS `password_wo` for the bootstrap administrator password so it is discarded from plan and state.
 - Deploy a second, untriggered migration Lambda from the same ZIP. It receives the administrator password only in an explicit invocation payload, applies the PostgreSQL migration history, provisions the least-privilege IAM database user, and never stores or logs the password.
 - Include the current Amazon RDS global CA bundle in the ZIP and require full TLS hostname and certificate validation.
-- Keep authentication disabled until the Angular Cognito adapter is implemented; the Cognito resources and conditional API Gateway JWT authorizer are provisioned now.
+- Keep authentication disabled by default; enable the implemented Angular Cognito adapter and conditional API Gateway/API JWT validation only for an explicit sign-in test deployment.
 
 ## Consequences
 
@@ -43,4 +43,3 @@ The AWS training workload must run the same ASP.NET Core API and PostgreSQL EF C
 - [IAM database authentication for RDS](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.html)
 - [Npgsql periodic password provider](https://www.npgsql.org/doc/security.html#auth-token-rotation-and-dynamic-password)
 - [Terraform write-only values](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only)
-

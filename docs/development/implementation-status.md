@@ -9,7 +9,10 @@ Last updated: 2026-07-23
 - EF Core repository abstraction with SQL Server and PostgreSQL providers.
 - Independent, tested PostgreSQL and SQL Server EF Core migration histories.
 - Explicit local migration and dual-provider migration-generation scripts.
-- Optional JWT bearer validation for Microsoft Entra ID or Amazon Cognito.
+- Angular OpenID Connect Authorization Code with PKCE for Microsoft Entra ID and Amazon Cognito, with memory-only user/token storage.
+- JWT bearer validation, normalized `User`/`Administrator` authorization, and owner-filtered topic access.
+- Authentication integration tests covering anonymous, missing-role, cross-user, and administrator access.
+- Provider-specific ownership migrations for PostgreSQL and SQL Server.
 - Local PostgreSQL and SQL Server Compose profiles.
 - Separate Azure and AWS Terraform bootstrap and environment roots.
 - Safe `deploy_workload = false` defaults.
@@ -30,13 +33,13 @@ Last updated: 2026-07-23
 
 - Azure Terraform syntax, provider schemas, formatting, and OPA rules are validated locally and in CI.
 - A real Azure plan/apply, migration, browser smoke test, and cost evidence require the user's Azure subscription, completed bootstrap/GitHub setup, public GHCR package, and explicit protected-environment approval.
-- Entra application registrations and Angular login integration are not yet implemented; Azure authentication remains disabled by default.
+- Entra application registrations and real browser sign-in evidence require the user's tenant; Azure authentication remains disabled by default.
 - A real AWS plan/apply, migration, frontend upload, CRUD smoke test, and cost evidence require the user's AWS account, completed state/OIDC bootstrap, protected GitHub environments, current Free Plan review, and explicit approvals.
-- Cognito Angular login integration is not yet implemented; AWS authentication remains disabled by default.
+- Cognito users and real browser sign-in evidence require an AWS deployment; AWS authentication remains disabled by default.
 
 ## Next implementation slice
 
-- Add Entra and Cognito Angular login adapters.
 - Add cost-estimation and post-destroy inventory evidence.
+- Capture real Entra and Cognito browser sign-in, role, ownership, and sign-out evidence during explicit test deployments.
 
 The diagrams describe the intended target architecture. This status file distinguishes deployed evidence from locally validated implementation.

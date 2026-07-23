@@ -10,7 +10,7 @@ database_allocated_storage = 20
 monthly_budget_amount      = 5
 alert_contact_emails       = ["you@example.com"]
 
-# Keep authentication disabled until the Angular Cognito adapter is configured.
+# Enable after creating a test user and assigning it to the User or Administrator group.
 authentication_enabled = false
 
 # Never put database_admin_password in this file. Supply it only through:

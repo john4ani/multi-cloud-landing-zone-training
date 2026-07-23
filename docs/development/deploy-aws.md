@@ -69,7 +69,18 @@ Build the application and set its runtime API path to the same CloudFront origin
 npm ci --prefix application/web-angular
 npm run build --prefix application/web-angular
 
-"globalThis.cloudTrainingConfig = { apiBaseUrl: '/api' };" |
+$browserConfig = @{
+  apiBaseUrl = '/api'
+  authentication = @{
+    enabled = [bool]$deployment.authentication_enabled
+    provider = 'Cognito'
+    authority = $deployment.authentication_authority
+    clientId = $deployment.user_pool_client_id
+    scope = $deployment.authentication_scope
+  }
+}
+
+"globalThis.cloudTrainingConfig = $($browserConfig | ConvertTo-Json -Compress -Depth 4);" |
   Set-Content application/web-angular/dist/web-angular/browser/config.js
 
 aws s3 sync application/web-angular/dist/web-angular/browser `
@@ -81,7 +92,7 @@ aws cloudfront create-invalidation `
   --paths '/*'
 ```
 
-Authentication remains disabled until the Angular Cognito adapter is implemented. Do not create real user data during this phase.
+Authentication is disabled by default. To test it, set `authentication_enabled = true` before planning, deploy, create synthetic Cognito test users, and assign the Terraform-created `User` or `Administrator` group as described in the [authentication guide](authentication.md#amazon-cognito-setup).
 
 ## Smoke test
 
@@ -91,6 +102,8 @@ Authentication remains disabled until the Angular Cognito adapter is implemented
   -FrontendUrl $deployment.frontend_url `
   -Cloud AWS
 ```
+
+When authentication is enabled, add `-AccessToken '<short-lived-access-token>'`. Never save a token in `terraform.tfvars`, Terraform state, source control, or the generated browser configuration.
 
 Capture the reviewed plan hash, OPA result, migration response, CRUD smoke-test result, budget/SNS configuration, and resource inventory as deployment evidence.
 

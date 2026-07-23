@@ -1,15 +1,18 @@
 using CloudArchitectureTraining.Domain.InterviewTopics;
+using CloudArchitectureTraining.Application.Security;
 
 namespace CloudArchitectureTraining.Application.InterviewTopics;
 
-public sealed class InterviewTopicService(IInterviewTopicRepository repository)
+public sealed class InterviewTopicService(
+    IInterviewTopicRepository repository,
+    ICurrentUser currentUser)
 {
     public async Task<IReadOnlyList<InterviewTopicDto>> ListAsync(CancellationToken cancellationToken) =>
-        (await repository.ListAsync(cancellationToken)).Select(Map).ToArray();
+        (await repository.ListAsync(currentUser.Principal, cancellationToken)).Select(Map).ToArray();
 
     public async Task<InterviewTopicDto?> GetAsync(Guid id, CancellationToken cancellationToken)
     {
-        var topic = await repository.GetAsync(id, cancellationToken);
+        var topic = await repository.GetAsync(id, currentUser.Principal, cancellationToken);
         return topic is null ? null : Map(topic);
     }
 
@@ -17,7 +20,14 @@ public sealed class InterviewTopicService(IInterviewTopicRepository repository)
         SaveInterviewTopicRequest request,
         CancellationToken cancellationToken)
     {
-        var topic = new InterviewTopic(request.Title, request.Cloud, request.Notes, request.Status);
+        var principal = currentUser.Principal;
+        var topic = new InterviewTopic(
+            principal.Provider,
+            principal.Subject,
+            request.Title,
+            request.Cloud,
+            request.Notes,
+            request.Status);
         await repository.AddAsync(topic, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         return Map(topic);
@@ -28,7 +38,7 @@ public sealed class InterviewTopicService(IInterviewTopicRepository repository)
         SaveInterviewTopicRequest request,
         CancellationToken cancellationToken)
     {
-        var topic = await repository.GetAsync(id, cancellationToken);
+        var topic = await repository.GetAsync(id, currentUser.Principal, cancellationToken);
         if (topic is null) return null;
 
         topic.Update(request.Title, request.Cloud, request.Notes, request.Status);
@@ -38,7 +48,7 @@ public sealed class InterviewTopicService(IInterviewTopicRepository repository)
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        var topic = await repository.GetAsync(id, cancellationToken);
+        var topic = await repository.GetAsync(id, currentUser.Principal, cancellationToken);
         if (topic is null) return false;
 
         repository.Remove(topic);

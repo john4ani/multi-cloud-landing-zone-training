@@ -2,13 +2,18 @@
 param(
     [Parameter(Mandatory)] [uri] $ApiBaseUrl,
     [Parameter(Mandatory)] [uri] $FrontendUrl,
-    [ValidateSet('Azure', 'AWS')] [string] $Cloud = 'Azure'
+    [ValidateSet('Azure', 'AWS')] [string] $Cloud = 'Azure',
+    [string] $AccessToken
 )
 
 $ErrorActionPreference = 'Stop'
 $apiRoot = $ApiBaseUrl.AbsoluteUri.TrimEnd('/')
 $healthUrl = "$($ApiBaseUrl.Scheme)://$($ApiBaseUrl.Authority)/health"
 $createdTopicId = $null
+$apiHeaders = @{}
+if (-not [string]::IsNullOrWhiteSpace($AccessToken)) {
+    $apiHeaders.Authorization = "Bearer $AccessToken"
+}
 
 function Invoke-WithRetry([scriptblock] $Operation, [string] $Description) {
     for ($attempt = 1; $attempt -le 12; $attempt++) {
@@ -24,12 +29,12 @@ function Invoke-WithRetry([scriptblock] $Operation, [string] $Description) {
 }
 
 Invoke-WithRetry { Invoke-RestMethod -Uri $healthUrl -TimeoutSec 20 } 'API health endpoint' | Out-Null
-$topics = Invoke-RestMethod -Uri "$apiRoot/topics" -TimeoutSec 20
+$topics = Invoke-RestMethod -Uri "$apiRoot/topics" -Headers $apiHeaders -TimeoutSec 20
 Write-Host "API list endpoint returned $(@($topics).Count) topic(s)."
 
 try {
     $uniqueName = "CI smoke test $([DateTime]::UtcNow.ToString('yyyyMMddHHmmss'))"
-    $created = Invoke-RestMethod -Method Post -Uri "$apiRoot/topics" -ContentType 'application/json' -Body (@{
+    $created = Invoke-RestMethod -Method Post -Uri "$apiRoot/topics" -Headers $apiHeaders -ContentType 'application/json' -Body (@{
         title = $uniqueName
         cloud = $Cloud
         notes = "Created by the guarded $Cloud deployment smoke test."
@@ -37,12 +42,12 @@ try {
     $createdTopicId = $created.id
     if (-not $createdTopicId) { throw 'The create response did not include an id.' }
 
-    $readBack = Invoke-RestMethod -Uri "$apiRoot/topics/$createdTopicId" -TimeoutSec 20
+    $readBack = Invoke-RestMethod -Uri "$apiRoot/topics/$createdTopicId" -Headers $apiHeaders -TimeoutSec 20
     if ($readBack.title -ne $uniqueName) { throw 'The created topic could not be read back correctly.' }
 }
 finally {
     if ($createdTopicId) {
-        Invoke-RestMethod -Method Delete -Uri "$apiRoot/topics/$createdTopicId" -TimeoutSec 20 | Out-Null
+        Invoke-RestMethod -Method Delete -Uri "$apiRoot/topics/$createdTopicId" -Headers $apiHeaders -TimeoutSec 20 | Out-Null
     }
 }
 

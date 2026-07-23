@@ -50,12 +50,16 @@ Create these repository variables from the bootstrap output:
 | `AWS_PLAN_ROLE_ARN` | `github_plan_role_arn` |
 | `AWS_APPLY_ROLE_ARN` | `github_apply_role_arn` |
 
+Set optional repository variable `AWS_AUTHENTICATION_ENABLED` to `true` only for an approved Cognito sign-in deployment. Its absence or `false` keeps browser sign-in and JWT enforcement disabled.
+
 Create two GitHub environments:
 
 1. `aws-training-plan` protects creation of the deployable exact plan.
 2. `aws-training` protects application of that plan and destruction.
 
 Configure required reviewers on both environments. Add the same environment secret named `AWS_DATABASE_ADMIN_PASSWORD` to both. Use a unique value of at least 16 characters. It is an RDS bootstrap credential, not an AWS access key.
+
+For an authenticated smoke test, add a short-lived access token as environment secret `AWS_AUTHENTICATION_TEST_ACCESS_TOKEN`. Remove it after the exercise. It is optional while authentication is disabled.
 
 Do not create `AWS_ACCESS_KEY_ID` or `AWS_SECRET_ACCESS_KEY` secrets. The workflows request a GitHub OIDC token and exchange it for a short-lived role session. Each credential action also verifies the expected AWS account ID.
 
@@ -67,6 +71,8 @@ Do not create `AWS_ACCESS_KEY_ID` or `AWS_SECRET_ACCESS_KEY` secrets. The workfl
 - `AWS Destroy` is manually dispatched from `main`. Enter `DESTROY-AWS`; the protected apply role creates and applies a checked destroy plan, then verifies no resources remain with the workload tags.
 
 Deploy and destroy share one concurrency group, so they cannot modify the AWS state simultaneously. Fork pull requests do not receive an AWS token.
+
+The workload Terraform creates the Cognito SPA client, hosted domain, callback/logout URLs, and `User`/`Administrator` groups. The deploy workflow generates Angular runtime configuration from the Terraform outputs. Create only synthetic users and assign groups using the [authentication guide](authentication.md#amazon-cognito-setup).
 
 ## Required GitHub controls
 

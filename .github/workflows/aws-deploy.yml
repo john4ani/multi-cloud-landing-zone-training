@@ -81,6 +81,7 @@ jobs:
       TF_IN_AUTOMATION: 'true'
       TF_INPUT: 'false'
       TF_VAR_deploy_workload: 'true'
+      TF_VAR_authentication_enabled: ${{ vars.AWS_AUTHENTICATION_ENABLED || 'false' }}
       TF_VAR_database_admin_password: ${{ secrets.AWS_DATABASE_ADMIN_PASSWORD }}
       TF_VAR_expires_at: ${{ inputs.expires_at }}
       TF_VAR_owner: ${{ github.actor }}
@@ -193,11 +194,28 @@ jobs:
         shell: pwsh
         run: |
           $deployment = Get-Content "$env:RUNNER_TEMP/deployment.json" | ConvertFrom-Json
-          "globalThis.cloudTrainingConfig = { apiBaseUrl: '/api' };" | Set-Content frontend/config.js
+          $browserConfig = @{
+            apiBaseUrl = '/api'
+            authentication = @{
+              enabled = [bool]$deployment.authentication_enabled
+              provider = $deployment.authentication_provider
+              authority = $deployment.authentication_authority
+              clientId = $deployment.user_pool_client_id
+              scope = $deployment.authentication_scope
+            }
+          }
+          "globalThis.cloudTrainingConfig = $($browserConfig | ConvertTo-Json -Depth 3 -Compress);" |
+            Set-Content frontend/config.js -Encoding utf8NoBOM
           aws s3 sync frontend "s3://$($deployment.frontend_bucket_name)" --delete --only-show-errors
           aws cloudfront create-invalidation --distribution-id $deployment.cloudfront_distribution_id --paths '/*' | Out-Null
       - name: Smoke test the deployed system
         shell: pwsh
+        env:
+          AUTHENTICATION_TEST_ACCESS_TOKEN: ${{ secrets.AWS_AUTHENTICATION_TEST_ACCESS_TOKEN }}
         run: |
           $deployment = Get-Content "$env:RUNNER_TEMP/deployment.json" | ConvertFrom-Json
-          ./scripts/smoke-test.ps1 -ApiBaseUrl $deployment.api_base_url -FrontendUrl $deployment.frontend_url -Cloud AWS
+          ./scripts/smoke-test.ps1 `
+            -ApiBaseUrl $deployment.api_base_url `
+            -FrontendUrl $deployment.frontend_url `
+            -Cloud AWS `
+            -AccessToken $env:AUTHENTICATION_TEST_ACCESS_TOKEN

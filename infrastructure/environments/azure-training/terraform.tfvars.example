@@ -8,10 +8,12 @@ alert_contact_emails = ["you@example.com"]
 # Build and publish the API first, then replace this with its immutable digest.
 api_container_image = "ghcr.io/your-github-account/cloud-training-api@sha256:replace-with-64-hex-characters"
 
-# Keep authentication disabled until the Entra application objects are configured.
+# Enable after the Entra API/SPA registrations, app roles, scope, and assignments are configured.
 authentication_enabled = false
 entra_authority        = "https://login.microsoftonline.com/<tenant-id>/v2.0"
-entra_audience         = "cloud-training-api"
+entra_audience         = "<api-application-client-id>"
+entra_spa_client_id    = "<spa-application-client-id>"
+entra_api_scope        = "api://<api-application-client-id>/access_as_user"
 
 # Never put sql_admin_password in this file. Supply it only through:
 # $env:TF_VAR_sql_admin_password = '<strong-bootstrap-password>'

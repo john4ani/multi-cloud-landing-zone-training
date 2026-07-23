@@ -1,6 +1,6 @@
 # Security data-flow diagram
 
-- Status: Accepted baseline
+- Status: Implemented locally; Azure and AWS sign-in evidence pending
 - Scope: Local, Azure training, and AWS training workload variants
 
 This logical diagram is intentionally provider-neutral. The [Azure deployment](azure-deployment.md) and [AWS deployment](aws-deployment.md) diagrams provide the cloud-specific topology.

@@ -14,6 +14,8 @@ The recommended deployment path is the protected GitHub Actions workflow documen
 
 The workflow creates and scans the application artifacts. No long-lived Azure credential or Static Web Apps deployment token is stored in GitHub.
 
+Authentication is disabled by default. To test it, complete the [Microsoft Entra ID setup](authentication.md#microsoft-entra-id-setup), configure the documented repository variables, and use an explicitly approved deployment.
+
 ## Local recovery path
 
 Prerequisites are Azure CLI, Terraform 1.13.x, .NET 10, OPA, completed remote-state bootstrap, a public immutable API image ending in `@sha256:<digest>`, and Azure SQL free-offer eligibility.
@@ -33,6 +35,8 @@ opa eval --fail --data ../../../policies/rego --input tfplan.json 'count(data.te
 terraform apply tfplan
 terraform output -json deployment
 ```
+
+Keep `authentication_enabled = false` for the normal infrastructure exercise. For an authentication test, set all four Entra values in `terraform.tfvars` as documented in the example file; the deployment guard fails if any are missing.
 
 Apply migrations from the repository root. The signed-in Azure identity must be the configured SQL Entra administrator:
 

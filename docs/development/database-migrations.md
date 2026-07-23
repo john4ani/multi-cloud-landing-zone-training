@@ -15,6 +15,8 @@ Start the selected database and run `scripts/migrate-local.ps1` before starting 
 
 Run `scripts/add-migration.ps1 -Name <MigrationName>`. It creates the named migration in both histories. Review the generated files instead of assuming their SQL is equivalent.
 
+`AddTopicOwnership` adds the immutable provider and subject used for authorization. Existing training rows are assigned to the local training principal so an upgrade remains usable when authentication is disabled. New authenticated rows are always stamped from the validated principal.
+
 ## Delivery controls
 
 - Application startup never applies migrations.

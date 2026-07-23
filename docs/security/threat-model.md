@@ -45,6 +45,17 @@ See the [security data-flow diagram](../architecture/security-data-flow.md). Clo
 - Error responses use stable problem details without stack traces or provider internals.
 - Rate, payload-size, and concurrency limits are explicit.
 
+## Implemented authentication controls
+
+- Angular uses Authorization Code with PKCE and exact callback/sign-out URLs.
+- OIDC user and token data is held in memory; session storage contains only transient protocol state.
+- The API validates configured issuer, audience, RS256 signature, lifetime, provider, and role claim. Cognito access tokens also require the configured client ID and `token_use=access`.
+- `User` and `Administrator` roles are normalized at the application boundary.
+- Topic ownership is stamped from the authenticated principal and filtered in the repository query; client-supplied ownership is never trusted.
+- Automated tests cover `401`, `403`, owner isolation, and administrator access.
+
+Real provider login, logout, CORS, and browser-storage evidence remains a deployment validation item.
+
 ## Accepted low-cost limitations
 
 | Limitation | Reason accepted | Compensating controls | Exit condition |

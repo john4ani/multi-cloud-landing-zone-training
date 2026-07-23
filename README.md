@@ -19,6 +19,7 @@ The reference workload uses Angular 22, ASP.NET Core on .NET 10, Azure SQL in Az
 11. [Azure CI/CD setup and operation](docs/development/azure-cicd.md)
 12. [AWS CI/CD setup and operation](docs/development/aws-cicd.md)
 13. [AWS manual deployment runbook](docs/development/deploy-aws.md)
+14. [Authentication and authorization](docs/development/authentication.md)
 
 ## Run locally
 
@@ -226,7 +227,7 @@ For more detail, see the [local development guide](docs/development/getting-star
 
 ## Current status
 
-The application and protected Azure/AWS Terraform delivery lanes are implemented. Cloud workload creation remains disabled by default. Real deployments require each cloud's state/OIDC bootstrap, protected GitHub environments, and explicit opt-in. See the [implementation status](docs/development/implementation-status.md), [Azure CI/CD guide](docs/development/azure-cicd.md), [AWS CI/CD guide](docs/development/aws-cicd.md), and the cloud deployment runbooks.
+The application, authentication/authorization slice, and protected Azure/AWS Terraform delivery lanes are implemented and locally validated. Local development keeps authentication disabled. Cloud workload creation and cloud authentication remain disabled by default; real sign-in tests require provider configuration, each cloud's state/OIDC bootstrap, protected GitHub environments, and explicit opt-in. See the [implementation status](docs/development/implementation-status.md), [authentication guide](docs/development/authentication.md), [Azure CI/CD guide](docs/development/azure-cicd.md), [AWS CI/CD guide](docs/development/aws-cicd.md), and the cloud deployment runbooks.
 
 ## Documentation principle
 

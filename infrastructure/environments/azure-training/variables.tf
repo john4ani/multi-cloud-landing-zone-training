@@ -60,6 +60,18 @@ variable "entra_audience" {
   description = "Expected API access-token audience."
 }
 
+variable "entra_spa_client_id" {
+  type        = string
+  default     = ""
+  description = "Microsoft Entra SPA application client ID used by Angular."
+}
+
+variable "entra_api_scope" {
+  type        = string
+  default     = ""
+  description = "Delegated API scope requested by Angular, for example api://<api-client-id>/access_as_user."
+}
+
 variable "database_name" {
   type    = string
   default = "cloud_training"

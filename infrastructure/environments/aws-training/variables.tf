@@ -81,7 +81,7 @@ variable "database_allocated_storage" {
 variable "authentication_enabled" {
   type        = bool
   default     = false
-  description = "Enable Cognito JWT enforcement after the Angular login adapter is configured."
+  description = "Enable Cognito browser sign-in and JWT enforcement for an explicit authentication test deployment."
 }
 
 variable "additional_callback_urls" {

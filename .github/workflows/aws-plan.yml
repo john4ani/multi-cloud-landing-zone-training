@@ -27,6 +27,7 @@ jobs:
       TF_IN_AUTOMATION: 'true'
       TF_INPUT: 'false'
       TF_VAR_deploy_workload: 'true'
+      TF_VAR_authentication_enabled: ${{ vars.AWS_AUTHENTICATION_ENABLED || 'false' }}
       TF_VAR_database_admin_password: PlanOnly-NotARealCredential-123!
       TF_VAR_owner: ${{ github.actor }}
       TF_VAR_lambda_package_path: ${{ github.workspace }}/artifacts/aws/cloud-architecture-training-api.zip

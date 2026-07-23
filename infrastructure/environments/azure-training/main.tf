@@ -32,8 +32,13 @@ resource "terraform_data" "deployment_guard" {
       error_message = "Set expires_at to the planned destruction or review date in YYYY-MM-DD format."
     }
     precondition {
-      condition     = !var.authentication_enabled || (var.entra_authority != "" && var.entra_audience != "")
-      error_message = "Set entra_authority and entra_audience when authentication_enabled is true."
+      condition = !var.authentication_enabled || (
+        var.entra_authority != "" &&
+        var.entra_audience != "" &&
+        var.entra_spa_client_id != "" &&
+        var.entra_api_scope != ""
+      )
+      error_message = "Set entra_authority, entra_audience, entra_spa_client_id, and entra_api_scope when authentication_enabled is true."
     }
   }
 }
@@ -69,6 +74,11 @@ module "training_platform" {
 output "deployment" {
   value = var.deploy_workload ? {
     api_fqdn                  = module.training_platform[0].api_fqdn
+    authentication_authority  = var.entra_authority
+    authentication_client_id  = var.entra_spa_client_id
+    authentication_enabled    = var.authentication_enabled
+    authentication_provider   = "Entra"
+    authentication_scope      = "openid profile email ${var.entra_api_scope}"
     api_identity_name         = module.training_platform[0].api_identity_name
     api_identity_principal_id = module.training_platform[0].api_identity_principal_id
     database_name             = module.training_platform[0].azure_sql_database_name

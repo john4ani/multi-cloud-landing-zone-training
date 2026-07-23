@@ -54,6 +54,26 @@ output "user_pool_id" {
   value = aws_cognito_user_pool.users.id
 }
 
+output "authentication_authority" {
+  value = local.cognito_issuer
+}
+
+output "authentication_enabled" {
+  value = var.authentication_enabled
+}
+
+output "authentication_scope" {
+  value = "openid profile email"
+}
+
+output "administrator_group_name" {
+  value = aws_cognito_user_group.administrator.name
+}
+
+output "user_group_name" {
+  value = aws_cognito_user_group.user.name
+}
+
 output "vpc_id" {
   value = aws_vpc.workload.id
 }

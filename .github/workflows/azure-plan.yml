@@ -24,6 +24,11 @@ jobs:
       TF_IN_AUTOMATION: 'true'
       TF_INPUT: 'false'
       TF_VAR_deploy_workload: 'true'
+      TF_VAR_authentication_enabled: ${{ vars.AZURE_AUTHENTICATION_ENABLED || 'false' }}
+      TF_VAR_entra_authority: ${{ vars.AZURE_ENTRA_AUTHORITY }}
+      TF_VAR_entra_audience: ${{ vars.AZURE_ENTRA_API_CLIENT_ID }}
+      TF_VAR_entra_spa_client_id: ${{ vars.AZURE_ENTRA_SPA_CLIENT_ID }}
+      TF_VAR_entra_api_scope: ${{ vars.AZURE_ENTRA_API_SCOPE }}
       TF_VAR_sql_admin_password: PlanOnly-NotARealCredential-123!
       TF_VAR_sql_entra_admin_object_id: ${{ vars.AZURE_APPLY_PRINCIPAL_ID }}
       TF_VAR_owner: ${{ github.actor }}
@@ -78,4 +83,3 @@ jobs:
             infrastructure/environments/azure-training/plan-summary.txt
             policy-result.txt
           retention-days: 3
-

@@ -428,6 +428,20 @@ resource "aws_cognito_user_pool_domain" "users" {
   user_pool_id = aws_cognito_user_pool.users.id
 }
 
+resource "aws_cognito_user_group" "user" {
+  name         = "User"
+  user_pool_id = aws_cognito_user_pool.users.id
+  description  = "Standard application users who can manage only their own training records"
+  precedence   = 10
+}
+
+resource "aws_cognito_user_group" "administrator" {
+  name         = "Administrator"
+  user_pool_id = aws_cognito_user_pool.users.id
+  description  = "Application administrators who can manage all training records"
+  precedence   = 0
+}
+
 resource "aws_apigatewayv2_api" "api" {
   name          = "${var.resource_prefix}-api"
   protocol_type = "HTTP"
@@ -592,8 +606,10 @@ resource "aws_lambda_function" "api" {
     variables = {
       ASPNETCORE_ENVIRONMENT              = "Aws"
       Authentication__Enabled             = tostring(var.authentication_enabled)
+      Authentication__Provider            = "Cognito"
       Authentication__Authority           = local.cognito_issuer
       Authentication__Audience            = aws_cognito_user_pool_client.spa.id
+      Authentication__RoleClaimType       = "cognito:groups"
       ConnectionStrings__TrainingDatabase = "Host=${aws_db_instance.database.address};Port=${local.database_port};Database=${var.database_name};Username=${var.database_runtime_username};SSL Mode=VerifyFull;Root Certificate=/var/task/global-bundle.pem;Timeout=15;Command Timeout=30;Maximum Pool Size=4;Minimum Pool Size=0;Connection Idle Lifetime=60"
       Database__Provider                  = "PostgreSql"
       Database__UseAwsIamAuthentication   = "true"

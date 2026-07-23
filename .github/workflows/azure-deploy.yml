@@ -87,6 +87,11 @@ jobs:
       TF_IN_AUTOMATION: 'true'
       TF_INPUT: 'false'
       TF_VAR_deploy_workload: 'true'
+      TF_VAR_authentication_enabled: ${{ vars.AZURE_AUTHENTICATION_ENABLED || 'false' }}
+      TF_VAR_entra_authority: ${{ vars.AZURE_ENTRA_AUTHORITY }}
+      TF_VAR_entra_audience: ${{ vars.AZURE_ENTRA_API_CLIENT_ID }}
+      TF_VAR_entra_spa_client_id: ${{ vars.AZURE_ENTRA_SPA_CLIENT_ID }}
+      TF_VAR_entra_api_scope: ${{ vars.AZURE_ENTRA_API_SCOPE }}
       TF_VAR_api_container_image: ${{ needs.build.outputs.image }}
       TF_VAR_sql_admin_password: ${{ secrets.AZURE_SQL_ADMIN_PASSWORD }}
       TF_VAR_sql_entra_admin_object_id: ${{ vars.AZURE_APPLY_PRINCIPAL_ID }}
@@ -198,7 +203,18 @@ jobs:
         shell: pwsh
         run: |
           $deployment = Get-Content "$env:RUNNER_TEMP/deployment.json" | ConvertFrom-Json
-          "globalThis.cloudTrainingConfig = { apiBaseUrl: 'https://$($deployment.api_fqdn)/api' };" | Set-Content frontend/config.js
+          $browserConfig = @{
+            apiBaseUrl = "https://$($deployment.api_fqdn)/api"
+            authentication = @{
+              enabled = [bool]$deployment.authentication_enabled
+              provider = $deployment.authentication_provider
+              authority = $deployment.authentication_authority
+              clientId = $deployment.authentication_client_id
+              scope = $deployment.authentication_scope
+            }
+          }
+          "globalThis.cloudTrainingConfig = $($browserConfig | ConvertTo-Json -Depth 3 -Compress);" |
+            Set-Content frontend/config.js -Encoding utf8NoBOM
           $token = az staticwebapp secrets list --name $deployment.frontend_name --resource-group $deployment.resource_group_name --query properties.apiKey -o tsv
           if ($LASTEXITCODE -ne 0 -or -not $token) { throw 'Could not obtain the Static Web Apps deployment token.' }
           Write-Output "::add-mask::$token"
@@ -212,13 +228,18 @@ jobs:
           skip_api_build: true
       - name: Smoke test the deployed system
         shell: pwsh
+        env:
+          AUTHENTICATION_TEST_ACCESS_TOKEN: ${{ secrets.AZURE_AUTHENTICATION_TEST_ACCESS_TOKEN }}
         run: |
           $deployment = Get-Content "$env:RUNNER_TEMP/deployment.json" | ConvertFrom-Json
-          ./scripts/smoke-test.ps1 -ApiBaseUrl "https://$($deployment.api_fqdn)/api" -FrontendUrl "https://$($deployment.frontend_hostname)"
+          ./scripts/smoke-test.ps1 `
+            -ApiBaseUrl "https://$($deployment.api_fqdn)/api" `
+            -FrontendUrl "https://$($deployment.frontend_hostname)" `
+            -Cloud Azure `
+            -AccessToken $env:AUTHENTICATION_TEST_ACCESS_TOKEN
       - name: Revoke the exposed frontend deployment token
         if: always() && steps.frontend.outputs.token != ''
         shell: pwsh
         run: |
           $deployment = Get-Content "$env:RUNNER_TEMP/deployment.json" | ConvertFrom-Json
           az staticwebapp secrets reset-api-key --name $deployment.frontend_name --resource-group $deployment.resource_group_name --output none
-

@@ -71,6 +71,10 @@ module "training_platform" {
 output "deployment" {
   value = var.deploy_workload ? {
     api_base_url               = "${module.training_platform[0].frontend_url}/api"
+    authentication_authority   = module.training_platform[0].authentication_authority
+    authentication_enabled     = module.training_platform[0].authentication_enabled
+    authentication_provider    = "Cognito"
+    authentication_scope       = module.training_platform[0].authentication_scope
     api_function_name          = module.training_platform[0].api_function_name
     api_gateway_endpoint       = module.training_platform[0].api_gateway_endpoint
     cloudfront_distribution_id = module.training_platform[0].cloudfront_distribution_id

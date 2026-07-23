@@ -7,7 +7,7 @@ public sealed class InterviewTopicTests
     [Fact]
     public void ConstructorTrimsRequiredValues()
     {
-        var topic = new InterviewTopic("  Identity  ", " Azure ");
+        var topic = new InterviewTopic("Local", "user-1", "  Identity  ", " Azure ");
 
         Assert.Equal("Identity", topic.Title);
         Assert.Equal("Azure", topic.Cloud);
@@ -16,5 +16,11 @@ public sealed class InterviewTopicTests
 
     [Fact]
     public void ConstructorRejectsAnEmptyTitle() =>
-        Assert.Throws<ArgumentException>(() => new InterviewTopic(" ", "AWS"));
+        Assert.Throws<ArgumentException>(() =>
+            new InterviewTopic("Local", "user-1", " ", "AWS"));
+
+    [Fact]
+    public void ConstructorRejectsAnEmptyOwner() =>
+        Assert.Throws<ArgumentException>(() =>
+            new InterviewTopic("Local", " ", "Identity", "AWS"));
 }
