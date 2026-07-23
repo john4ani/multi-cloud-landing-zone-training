@@ -16,6 +16,9 @@ foreach ($workflow in $workflowFiles) {
         if ($line -match '^\s*pull_request_target\s*:') {
             $errors.Add("$($workflow.Name):$lineNumber pull_request_target is prohibited.")
         }
+        if ($line -match '^\s*(aws-access-key-id|aws-secret-access-key)\s*:') {
+            $errors.Add("$($workflow.Name):$lineNumber long-lived AWS access-key inputs are prohibited; use GitHub OIDC.")
+        }
     }
 }
 

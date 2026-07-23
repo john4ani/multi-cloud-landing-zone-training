@@ -13,7 +13,7 @@
 
   <rect width="1600" height="930" fill="#fff"/>
   <text x="60" y="54" class="title">Multi-cloud delivery and Terraform state control plane</text>
-  <text x="60" y="82" class="subtitle">Azure implemented; AWS target - OIDC federation, exact plans, protected approval, and separate state</text>
+  <text x="60" y="82" class="subtitle">Azure and AWS implemented - OIDC federation, exact plans, protected approval, and separate state</text>
 
   <circle cx="90" cy="300" r="36" fill="#e8eef5" stroke="#6b7b8d" stroke-width="1.5"/>
   <circle cx="90" cy="287" r="10" fill="#526173"/>
@@ -99,7 +99,7 @@
   <path d="M1412 290 V338 H1410" class="azflow"/>
 
   <rect x="1080" y="490" width="450" height="320" rx="10" class="aws"/>
-  <text x="1105" y="522" class="group-label" style="fill:#9a4d00">AWS deployment lane - target</text>
+  <text x="1105" y="522" class="group-label" style="fill:#9a4d00">AWS deployment lane - implemented</text>
   <g transform="translate(1115 550)">
     <rect width="165" height="110" rx="8" class="resource"/>
     <image href="icons/aws/iam.svg" x="57" y="10" width="50" height="50"/>

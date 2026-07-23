@@ -1,6 +1,6 @@
 # AWS deployment runbook
 
-This runbook deploys the AWS workload manually. The protected AWS CI/CD lane is intentionally the next implementation slice.
+This runbook deploys the AWS workload manually for learning or recovery. The normal protected path is the [AWS CI/CD lane](aws-cicd.md).
 
 ## Cost and security boundary
 
@@ -106,4 +106,3 @@ aws resourcegroupstaggingapi get-resources `
 ```
 
 Confirm that workload resources are gone. The separately bootstrapped Terraform state bucket remains. AWS Budgets and CloudWatch alarms notify; they do not stop spending automatically.
-

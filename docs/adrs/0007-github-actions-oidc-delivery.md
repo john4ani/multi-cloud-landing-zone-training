@@ -1,6 +1,6 @@
 # ADR-0007: Use GitHub Actions with OIDC and gated deployment workflows
 
-- Status: Accepted and implemented for Azure
+- Status: Accepted and implemented
 - Date: 2026-07-21
 
 ## Context
@@ -78,16 +78,18 @@ Rejected because GitHub OIDC supports short-lived federation to both clouds.
 
 ## Validation
 
-- OIDC trust tests reject a different repository, branch, environment, and audience.
+- OIDC trust is exact-match constrained by repository context, protected environment or PR/main context, and the expected audience.
 - Plan identity cannot apply; apply identity is unavailable before approval.
 - Runtime identities cannot read Terraform state or modify infrastructure.
 - A deliberately failing OPA policy blocks deployment.
 - The apply job consumes the reviewed plan checksum.
-- Azure destruction completes and the persistent workload resource group is empty; state and OIDC bootstrap resources remain explicitly retained.
+- Cloud destruction checks for remaining workload resources; state and OIDC bootstrap resources remain explicitly retained.
 
 ## Implementation note
 
-The Azure lane is implemented by `validate.yml`, `azure-plan.yml`, `azure-deploy.yml`, and `azure-destroy.yml`. The deploy workflow obtains a Static Web Apps deployment token only after protected OIDC authentication, masks it, uses it once, and resets it in an `always()` cleanup step. The exact binary plan and checksum are retained for one day. AWS implementation remains pending.
+The Azure lane is implemented by `validate.yml`, `azure-plan.yml`, `azure-deploy.yml`, and `azure-destroy.yml`. The deploy workflow obtains a Static Web Apps deployment token only after protected OIDC authentication, masks it, uses it once, and resets it in an `always()` cleanup step.
+
+The AWS lane is implemented by `aws-plan.yml`, `aws-deploy.yml`, and `aws-destroy.yml`. It builds an immutable Lambda ZIP and Angular artifact, uses separate exact-subject plan/apply roles, invokes the private migration Lambda, publishes through S3/CloudFront, and performs CRUD smoke testing. Both cloud lanes retain the exact binary plan and checksum for one day.
 
 ## References
 

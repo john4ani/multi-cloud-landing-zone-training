@@ -1,0 +1,80 @@
+name: AWS Plan
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/aws-*.yml
+      - application/backend/**
+      - infrastructure/**
+      - policies/**
+      - scripts/build-aws-package.ps1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    if: >-
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TF_IN_AUTOMATION: 'true'
+      TF_INPUT: 'false'
+      TF_VAR_deploy_workload: 'true'
+      TF_VAR_database_admin_password: PlanOnly-NotARealCredential-123!
+      TF_VAR_owner: ${{ github.actor }}
+      TF_VAR_lambda_package_path: ${{ github.workspace }}/artifacts/aws/cloud-architecture-training-api.zip
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build the reviewed Lambda package
+        shell: pwsh
+        run: ./scripts/build-aws-package.ps1
+      - uses: aws-actions/configure-aws-credentials@11b1c58b24724e66aa52a847862a0c1b0c4b0c7b # v6.1.0
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
+          role-session-name: aws-plan-${{ github.run_id }}
+          allowed-account-ids: ${{ vars.AWS_ACCOUNT_ID }}
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.13.4
+      - uses: open-policy-agent/setup-opa@b2b258e089860efaadaaf71bf6e3aecb4a3eeff1 # v2.4.0
+        with:
+          version: 1.7.1
+      - name: Create speculative plan
+        working-directory: infrastructure/environments/aws-training
+        shell: bash
+        run: |
+          set -euo pipefail
+          export TF_VAR_expires_at="$(date -u -d '+7 days' +%F)"
+          terraform init -input=false \
+            -backend-config="bucket=${{ vars.AWS_TFSTATE_BUCKET }}" \
+            -backend-config="key=cloud-architecture-training/aws/training/platform.tfstate" \
+            -backend-config="region=${{ vars.AWS_REGION }}" \
+            -backend-config="encrypt=true" \
+            -backend-config="use_lockfile=true"
+          terraform plan -input=false -lock=false -out=tfplan
+          terraform show -json tfplan > tfplan.json
+          terraform show -no-color tfplan > plan-summary.txt
+      - name: Enforce policy as code
+        shell: bash
+        run: |
+          set -euo pipefail
+          opa eval --data policies/rego --input infrastructure/environments/aws-training/tfplan.json --format pretty 'data.terraform.security.deny' > policy-result.txt
+          opa eval --fail --data policies/rego --input infrastructure/environments/aws-training/tfplan.json 'count(data.terraform.security.deny) == 0'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: aws-speculative-plan-${{ github.run_id }}
+          path: |
+            infrastructure/environments/aws-training/plan-summary.txt
+            policy-result.txt
+          retention-days: 3

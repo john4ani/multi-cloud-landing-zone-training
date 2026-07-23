@@ -7,7 +7,7 @@ Status: Implemented baseline
 - Prevent unsafe or unexpectedly expensive Terraform changes before deployment.
 - Express common intent consistently across Azure and AWS.
 - Retain provider-specific controls where cloud behavior differs.
-- test policies with allowed and denied examples.
+- Test policies with allowed and denied examples.
 - Enforce critical controls against changes made outside Terraform where practical.
 
 ## Enforcement layers
